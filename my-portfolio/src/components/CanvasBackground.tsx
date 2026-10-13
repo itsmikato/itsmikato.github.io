@@ -16,10 +16,18 @@ type Shape = {
 const NEON = ["#39ff14", "#00ffff", "#ff10f0", "#f5ff00", "#ff6ec7"];
 
 // keep the background quiet so the artwork stays the focus
-const SHAPE_COUNT = 14;
+const SHAPES_PER_SCREEN = 14;       // density: shapes per viewport height of page
+const MAX_SHAPES = 80;
+const MAX_CANVAS_PIXELS = 16e6;     // iOS Safari refuses larger canvases
 const SHAPE_ALPHA = 0.28;
 const MAX_SPEED = 0.25;
 
+/*
+ * The canvas covers the whole page and scrolls with it (shapes are spread over
+ * the full height). iOS Safari only draws scrolling page content under its
+ * status bar and toolbar, never fixed or sticky elements, so this is what lets
+ * the shapes reach every edge of the screen.
+ */
 export default function CanvasBackground() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const animId = useRef<number | null>(null);
@@ -28,26 +36,11 @@ export default function CanvasBackground() {
         const canvas = canvasRef.current!;
         const ctx = canvas.getContext("2d")!;
         let redraw: (() => void) | null = null;
-        // w/h are CSS pixels; the bitmap is scaled up for sharp retina rendering
-        let w = 0;
-        let h = 0;
-        const resize = () => {
-            const dpr = Math.min(window.devicePixelRatio || 1, 2);
-            w = canvas.clientWidth;
-            h = canvas.clientHeight;
-            canvas.width = Math.round(w * dpr);
-            canvas.height = Math.round(h * dpr);
-            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-            redraw?.();
-        };
-        resize();
-        window.addEventListener("resize", resize);
-
-        // ---- create shapes -------------------------------------------------
         const rnd = (min: number, max: number) => Math.random() * (max - min) + min;
         const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
 
-        const shapes: Shape[] = Array.from({ length: SHAPE_COUNT }, () => ({
+        const shapes: Shape[] = [];
+        const newShape = (): Shape => ({
             x: rnd(0, w),
             y: rnd(0, h),
             size: rnd(24, 60),
@@ -58,8 +51,42 @@ export default function CanvasBackground() {
             type: Math.random() < 0.5 ? "triangle" : "rect",
             colorA: pick(NEON),
             colorB: pick(NEON),
-        }));
-        // -------------------------------------------------------------------
+        });
+
+        // w/h are CSS pixels (the whole page); the bitmap is scaled up for
+        // sharp retina rendering, within what the browser allows
+        let w = 0;
+        let h = 0;
+        const resize = () => {
+            w = canvas.clientWidth;
+            h = canvas.clientHeight;
+            if (!w || !h) return;
+            const dpr = Math.min(
+                window.devicePixelRatio || 1,
+                2,
+                Math.sqrt(MAX_CANVAS_PIXELS / (w * h)),
+            );
+            canvas.width = Math.round(w * dpr);
+            canvas.height = Math.round(h * dpr);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            // keep the density constant as the page gets taller or shorter
+            const target = Math.min(
+                MAX_SHAPES,
+                Math.max(SHAPES_PER_SCREEN, Math.round((SHAPES_PER_SCREEN * h) / window.innerHeight)),
+            );
+            while (shapes.length < target) shapes.push(newShape());
+            shapes.length = target;
+            shapes.forEach((s) => {
+                s.x = Math.min(s.x, w);
+                s.y = Math.min(s.y, h);
+            });
+            redraw?.();
+        };
+        resize();
+        // the page height changes as content loads or the window resizes
+        const observer = new ResizeObserver(resize);
+        observer.observe(canvas);
 
         const drawShape = (s: Shape) => {
             ctx.save();
@@ -87,9 +114,10 @@ export default function CanvasBackground() {
         };
 
         const draw = () => {
-            // repaint background
-            ctx.fillStyle = "#0e0e0e";
-            ctx.fillRect(0, 0, w, h);
+            // transparent canvas: the page's own background shows through, so
+            // there's exactly one black (a painted canvas black can render a
+            // shade off from the CSS one in Safari)
+            ctx.clearRect(0, 0, w, h);
             shapes.forEach(drawShape);
         };
 
@@ -121,7 +149,7 @@ export default function CanvasBackground() {
 
         return () => {
             if (animId.current !== null) cancelAnimationFrame(animId.current);
-            window.removeEventListener("resize", resize);
+            observer.disconnect();
         };
     }, []);
 

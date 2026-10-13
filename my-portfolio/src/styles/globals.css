@@ -37,24 +37,27 @@ body {
 /* ------------------------------------------------------------------ */
 /*  Background canvas                                                 */
 /* ------------------------------------------------------------------ */
-/* Sticky rather than fixed: iOS Safari draws page content under its
-   status bar and toolbar, but keeps fixed elements out from under them.
-   The holder has no height, so it takes no space in the layout. */
+/* The page wrapper is the canvas's frame: at least one screen tall */
+#__next {
+  position: relative;
+  display: flow-root;                 /* children's margins stay inside it */
+  min-height: 100vh;
+  min-height: 100lvh;
+}
+
+/* covers the whole page and scrolls with it (see CanvasBackground.tsx) */
 .background-holder {
-  position: sticky;
-  top: 0;
-  height: 0;
+  position: absolute;
+  inset: 0;
   z-index: 1;
+  overflow: hidden;
   pointer-events: none;
 }
 
 .background-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
+  display: block;
   width: 100%;
-  height: 100vh;
-  height: 100lvh;                     /* reach under Safari's toolbars */
+  height: 100%;
 }
 
 /* ------------------------------------------------------------------ */
@@ -101,7 +104,9 @@ body {
 /* ------------------------------------------------------------------ */
 .portfolio-container {
   position: relative;
-  margin-top: calc(100px + var(--safe-top));
+  /* padding, not margin: a top margin here collapses up through the page
+     and pushes everything, the background included, 100px down */
+  padding-top: calc(100px + var(--safe-top));
   margin-bottom: 96px;                /* space before the About section */
   width: 80%;
   max-width: 1200px;
