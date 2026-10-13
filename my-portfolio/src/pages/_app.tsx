@@ -1,6 +1,7 @@
 import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
+import { useRouter } from "next/router";
 import { Jost } from "next/font/google";
 import CanvasBackground from "../components/CanvasBackground";
 
@@ -9,6 +10,8 @@ const jost = Jost({ subsets: ["latin"], weight: ["400", "500", "600"] });
 
 /* Shared by every page, so the background keeps animating between pages */
 export default function App({ Component, pageProps }: AppProps) {
+  const isHome = useRouter().pathname === "/";
+
   return (
     <>
       <style jsx global>{`
@@ -26,15 +29,19 @@ export default function App({ Component, pageProps }: AppProps) {
 
       <CanvasBackground />
 
-      <h1 className="title">Mikato</h1>
-      <a
-          className="insta-link"
-          href="https://www.instagram.com/mikatonana/"
-          target="_blank"
-          rel="noopener noreferrer"
-      >
-        @mikatonana
-      </a>
+      {isHome && (
+        <>
+          <h1 className="title">Mikato</h1>
+          <a
+              className="insta-link"
+              href="https://www.instagram.com/mikatonana/"
+              target="_blank"
+              rel="noopener noreferrer"
+          >
+            @mikatonana
+          </a>
+        </>
+      )}
 
       <Component {...pageProps} />
     </>

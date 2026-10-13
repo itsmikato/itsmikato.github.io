@@ -126,9 +126,8 @@ export default function CanvasBackground() {
     }, []);
 
     return (
-        <canvas
-            ref={canvasRef}
-            className="background-canvas"
-        />
+        <div className="background-holder" aria-hidden="true">
+            <canvas ref={canvasRef} className="background-canvas" />
+        </div>
     );
 }

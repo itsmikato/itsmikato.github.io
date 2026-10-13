@@ -25,12 +25,6 @@ body {
   color: #fff;
 }
 
-/* the grid behind an open project stays put (class set by ProjectDetail) */
-html.detail-open,
-html.detail-open body {
-  overflow: hidden;
-}
-
 /* Spacing that also clears the notch / Dynamic Island / home indicator
    (the page uses viewport-fit=cover, so it extends under them) */
 :root {
@@ -43,15 +37,24 @@ html.detail-open body {
 /* ------------------------------------------------------------------ */
 /*  Background canvas                                                 */
 /* ------------------------------------------------------------------ */
+/* Sticky rather than fixed: iOS Safari draws page content under its
+   status bar and toolbar, but keeps fixed elements out from under them.
+   The holder has no height, so it takes no space in the layout. */
+.background-holder {
+  position: sticky;
+  top: 0;
+  height: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
 .background-canvas {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100vh;
   height: 100lvh;                     /* reach under Safari's toolbars */
-  z-index: 1;
-  pointer-events: none;
 }
 
 /* ------------------------------------------------------------------ */
@@ -132,6 +135,7 @@ html.detail-open body {
 .project img {
   display: block;
   width: 100%;
+  height: auto;
   border-radius: 6px;
 }
 
@@ -151,17 +155,17 @@ html.detail-open body {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Project detail overlay & close button                             */
+/*  Project page & close button                                       */
 /* ------------------------------------------------------------------ */
+/* a normal page (not a fixed layer) so it scrolls edge to edge on iPhone */
 .project-detail {
-  position: fixed;
-  inset: 0;
+  position: relative;
+  min-height: 100vh;
+  min-height: 100lvh;
   background: #0e0e0e;
-  z-index: 10;
+  z-index: 2;
   color: #fff;
   padding: var(--safe-top) var(--safe-right) calc(48px + var(--safe-bottom)) var(--safe-left);
-  overflow-y: auto;
-  overscroll-behavior: contain;       /* don't hand scrolling on to the grid */
 }
 
 /* sized to the picture itself (not a letterboxed box) so the rounded

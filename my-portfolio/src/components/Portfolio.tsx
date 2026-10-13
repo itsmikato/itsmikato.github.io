@@ -1,9 +1,16 @@
+import { useEffect } from "react";
 import Link from "next/link";
 import { projects } from "../data/projects";
-import { imageUrl } from "../lib/images";
-import { markOpenedFromGrid } from "../lib/nav";
+import { imageSize, imageUrl } from "../lib/images";
+import { markOpenedFromGrid, takeGridScroll } from "../lib/nav";
 
 export default function Portfolio() {
+    // back from a project: return to where the visitor was in the grid
+    useEffect(() => {
+        const y = takeGridScroll();
+        if (y !== null) requestAnimationFrame(() => window.scrollTo(0, y));
+    }, []);
+
     return (
         <div className="portfolio-container">
             <div className="portfolio">
@@ -11,11 +18,10 @@ export default function Portfolio() {
                     <Link
                         key={proj.slug}
                         href={`/${proj.slug}`}
-                        scroll={false}
                         className="project"
                         onClick={markOpenedFromGrid}
                     >
-                        <img src={imageUrl(proj.img, "md")} alt={proj.title} />
+                        <img src={imageUrl(proj.img, "md")} {...imageSize(proj.img)} alt={proj.title} />
                         <h3>{proj.title}</h3>
                     </Link>
                 ))}

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import type { Project } from "../data/projects";
-import { imageUrl } from "../lib/images";
+import { imageSize, imageUrl } from "../lib/images";
 import { wasOpenedFromGrid } from "../lib/nav";
 
 export default function ProjectDetail({ project }: { project: Project }) {
@@ -36,13 +36,6 @@ export default function ProjectDetail({ project }: { project: Project }) {
         return () => window.removeEventListener("keydown", onKey);
     }, [backToPortfolio, step]);
 
-    // keep the grid from scrolling behind the open project
-    useEffect(() => {
-        const root = document.documentElement;
-        root.classList.add("detail-open");
-        return () => root.classList.remove("detail-open");
-    }, []);
-
     // swipe left/right on the main image to switch images
     const touchStart = useRef<{ x: number; y: number } | null>(null);
     const onTouchStart = (e: React.TouchEvent) => {
@@ -73,6 +66,7 @@ export default function ProjectDetail({ project }: { project: Project }) {
             <div className="w-full max-w-3xl mt-16 px-4">
                 <img
                     src={imageUrl(images[active], "lg")}
+                    {...imageSize(images[active])}
                     alt={`${project.title} – image ${active + 1} of ${images.length}`}
                     className="main-image rounded-lg shadow-lg mb-4"
                     onClick={keepOpen}
