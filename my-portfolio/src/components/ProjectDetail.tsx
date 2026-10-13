@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useRouter } from "next/router";
 
 type Project = {
     title: string;
@@ -14,12 +13,11 @@ type Props = {
 };
 
 export default function ProjectDetail({ project, backToPortfolio }: Props) {
-    const { basePath } = useRouter();        // "" in dev, "/mik.github.io" in prod
     const images = [project.img, ...(project.gallery ?? [])];
     const [active, setActive] = useState(0);
 
     // encodeURI handles file names with spaces (e.g. "Pink Koi32.jpg")
-    const src = (path: string) => encodeURI(`${basePath}${path}`);
+    const src = (path: string) => encodeURI(path);
 
     return (
         <div className="project-detail flex flex-col items-center">
