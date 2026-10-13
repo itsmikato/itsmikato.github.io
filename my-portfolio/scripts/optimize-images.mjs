@@ -4,6 +4,9 @@
  *   <name>-md.webp  portfolio cards     (max 640px)
  *   <name>-sm.webp  gallery thumbnails  (max 160px)
  *   <name>-og.jpg   link preview        (1200×630)
+ * GIFs and videos (.gif/.mp4/.webm) are copied as they are: <name>.<ext>.
+ * A video's still image (card, thumbnail, link preview) is <name>-poster.png next to it.
+ * Folders starting with "_" (e.g. artwork/_unused) are skipped.
  * Names are lower-cased with spaces turned into dashes – keep in sync with src/lib/images.ts.
  * Also writes src/data/image-sizes.json (width/height of each original) so pages can
  * reserve the right space before an image loads.
@@ -24,8 +27,9 @@ const outName = (rel) => rel.replace(/\.[^.]+$/, "").toLowerCase().replace(/\s+/
 async function* walk(dir) {
     for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
         const full = path.join(dir, entry.name);
-        if (entry.isDirectory()) yield* walk(full);
-        else if (/\.(jpe?g|png)$/i.test(entry.name)) yield full;
+        if (entry.isDirectory()) {
+            if (!entry.name.startsWith("_")) yield* walk(full);
+        } else if (/\.(jpe?g|png|gif|mp4|webm)$/i.test(entry.name)) yield full;
     }
 }
 
@@ -40,11 +44,26 @@ const isFresh = async (src, out) => {
 let made = 0;
 const dimensions = {};
 for await (const file of walk(SRC)) {
-    const { width, height } = await sharp(file).metadata();
-    dimensions[path.relative(SRC, file).split(path.sep).join("/")] = [width, height];
-
-    const base = path.join(OUT, outName(path.relative(SRC, file)));
+    const rel = path.relative(SRC, file).split(path.sep).join("/");
+    const base = path.join(OUT, outName(rel));
     await fs.mkdir(path.dirname(base), { recursive: true });
+
+    // animations: copied as they are (a video takes its size from its poster)
+    if (/\.(gif|mp4|webm)$/i.test(file)) {
+        if (/\.gif$/i.test(file)) {
+            const { width, height } = await sharp(file).metadata();
+            dimensions[rel] = [width, height];
+        }
+        const out = base + path.extname(file).toLowerCase();
+        if (!(await isFresh(file, out))) {
+            await fs.copyFile(file, out);
+            made++;
+        }
+        continue;
+    }
+
+    const { width, height } = await sharp(file).metadata();
+    dimensions[rel] = [width, height];
 
     const jobs = [
         ...Object.entries(SIZES).map(([size, px]) => [

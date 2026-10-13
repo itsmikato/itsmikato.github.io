@@ -202,6 +202,7 @@ html {
 /* ------------------------------------------------------------------ */
 /* column layout: artwork centered in the free space, titles line up per row */
 .project {
+  position: relative;                 /* anchors the animation badge */
   display: flex;
   flex-direction: column;
   background: rgba(255, 255, 255, 0.08);
@@ -218,6 +219,22 @@ html {
 .project:hover {
   transform: translateY(-10px);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* "▶ Animation" marker on cards whose piece is a video */
+.project .badge {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(14, 14, 14, 0.7);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  color: #fff;
 }
 
 .project img {
@@ -275,6 +292,53 @@ html {
 
 .project-detail h2 {
   font-family: var(--font-display);
+}
+
+/* ---------- process: sketches, tests, work in progress ------------ */
+.process {
+  width: 100%;
+  max-width: 1200px;
+  margin: 56px auto 0;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+.process h3 {
+  margin: 0 0 16px;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.process-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.process figure {
+  margin: 0;
+}
+
+.process img,
+.process video {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  background: #000;
+}
+
+.process figcaption {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+@media (min-width: 1024px) {
+  .process {
+    padding: 0 48px;
+  }
 }
 
 .detail-layout {

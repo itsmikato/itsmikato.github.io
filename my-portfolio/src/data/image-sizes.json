@@ -1,42 +1,58 @@
 {
-  "agame.jpg": [
+  "agamemnon/agamemnon.jpg": [
     843,
     1191
   ],
-  "agamemnon/agam.png": [
-    843,
-    1191
-  ],
-  "koi.jpg": [
-    1240,
-    1754
-  ],
-  "koi/Pink Koi32.jpg": [
-    1240,
-    1754
-  ],
-  "koi/Pink Koi33.jpg": [
-    1240,
-    1754
-  ],
-  "koi/Pink Koi34.jpg": [
-    1240,
-    1754
-  ],
-  "koi/Pink Koi35.jpg": [
-    1240,
-    1754
-  ],
-  "tattoos/Flow_1.jpg": [
+  "flow/flow-1.jpg": [
     2160,
     2700
   ],
-  "tattoos/Flow_2.jpg": [
+  "flow/flow-2.jpg": [
     2160,
     2700
   ],
-  "tattoos/Flow_3.jpg": [
+  "flow/flow-3.jpg": [
     2160,
     2700
+  ],
+  "good-llama/good-llama-poster.png": [
+    1080,
+    1920
+  ],
+  "good-llama/process/lettering-test-poster.png": [
+    486,
+    486
+  ],
+  "good-llama/process/turnaround-1.gif": [
+    946,
+    816
+  ],
+  "good-llama/process/turnaround-2.gif": [
+    946,
+    900
+  ],
+  "good-llama/process/turnaround-test-poster.png": [
+    640,
+    480
+  ],
+  "nishikigoi/coral.jpg": [
+    1240,
+    1754
+  ],
+  "nishikigoi/mint.jpg": [
+    1240,
+    1754
+  ],
+  "nishikigoi/navy.jpg": [
+    1240,
+    1754
+  ],
+  "nishikigoi/sand.jpg": [
+    1240,
+    1754
+  ],
+  "nishikigoi/teal.jpg": [
+    1240,
+    1754
   ]
 }

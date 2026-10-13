@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import type { Project } from "../data/projects";
-import { imageSize, imageUrl } from "../lib/images";
+import { imageUrl } from "../lib/images";
+import Media from "./Media";
 import { wasOpenedFromGrid } from "../lib/nav";
 
 export default function ProjectDetail({ project }: { project: Project }) {
     const router = useRouter();
-    const images = [project.img, ...(project.gallery ?? [])];
+    const images = [project.main ?? project.img, ...(project.gallery ?? [])];
     const [active, setActive] = useState(0);
 
     // guard: one tap can reach both the ✕ and the backdrop, and going back
@@ -66,10 +67,10 @@ export default function ProjectDetail({ project }: { project: Project }) {
             {/* stacked on phones, artwork | text side by side on wide screens */}
             <div className="detail-layout">
               <div className="detail-media">
-                <img
-                    src={imageUrl(images[active], "lg")}
-                    {...imageSize(images[active])}
-                    alt={`${project.title} – image ${active + 1} of ${images.length}`}
+                <Media
+                    key={images[active]}
+                    src={images[active]}
+                    alt={`${project.title} – ${active + 1} of ${images.length}`}
                     className="main-image rounded-lg shadow-lg mb-4"
                     onClick={keepOpen}
                     onTouchStart={onTouchStart}
@@ -104,6 +105,20 @@ export default function ProjectDetail({ project }: { project: Project }) {
                 </p>
               </div>
             </div>
+
+            {project.process && (
+                <section className="process" onClick={keepOpen}>
+                    <h3>Process</h3>
+                    <div className="process-grid">
+                        {project.process.map((item) => (
+                            <figure key={item.src}>
+                                <Media src={item.src} alt={item.caption ?? "Process"} size="md" />
+                                {item.caption && <figcaption>{item.caption}</figcaption>}
+                            </figure>
+                        ))}
+                    </div>
+                </section>
+            )}
         </div>
     );
 }

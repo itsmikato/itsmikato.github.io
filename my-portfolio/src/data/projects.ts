@@ -1,14 +1,42 @@
-/* Image paths are relative to artwork/ (see src/lib/images.ts) */
+/*
+ * One folder per project in artwork/, named like the slug. Paths below are
+ * relative to artwork/. Images (.jpg/.png), GIFs and videos (.mp4) all work;
+ * a video needs a still next to it named <video>-poster.png.
+ */
+
+export type ProcessItem = {
+    src: string;
+    caption?: string;
+};
 
 export type Project = {
     slug: string;           // page address: itsmikato.github.io/<slug>
     title: string;
     content: string;
-    img: string;            // cover image
-    gallery?: string[];     // extra images shown on the project page
+    img: string;            // cover: a still image for the card and link previews
+    main?: string;          // the finished piece if it isn't the cover (e.g. a video)
+    gallery?: string[];     // more finished pieces, switchable with thumbnails
+    process?: ProcessItem[]; // sketches, tests, work in progress
 };
 
 export const projects: Project[] = [
+    {
+        slug: "good-llama",
+        title: "Good Llama",
+        content:
+            "Good morning, good llama.\n\n" +
+            "A five-second animated loop: a llama turns a full circle inside a ring " +
+            "of teal lettering, drawn in black with fine outlines and patches of deep " +
+            "blue. Made in a vertical 9:16 format, the shape of a phone screen.",
+        img: "good-llama/good-llama-poster.png",
+        main: "good-llama/good-llama.mp4",
+        process: [
+            { src: "good-llama/process/turnaround-1.gif", caption: "Turnaround test 1" },
+            { src: "good-llama/process/turnaround-2.gif", caption: "Turnaround test 2" },
+            { src: "good-llama/process/turnaround-test.mp4", caption: "First animated turnaround" },
+            { src: "good-llama/process/lettering-test.mp4", caption: "Early version with the lettering" },
+        ],
+    },
     {
         slug: "nishikigoi",
         title: "Nishikigoi",
@@ -18,12 +46,12 @@ export const projects: Project[] = [
             "worked into bold black patterns. The same fish is repeated across five " +
             "colourways (mint, coral, sand, navy and teal), with the kanji stacked in " +
             "fading rows at opposite corners.",
-        img: "koi.jpg",
+        img: "nishikigoi/mint.jpg",
         gallery: [
-            "koi/Pink Koi32.jpg",
-            "koi/Pink Koi33.jpg",
-            "koi/Pink Koi34.jpg",
-            "koi/Pink Koi35.jpg",
+            "nishikigoi/coral.jpg",
+            "nishikigoi/sand.jpg",
+            "nishikigoi/navy.jpg",
+            "nishikigoi/teal.jpg",
         ],
     },
     {
@@ -34,7 +62,7 @@ export const projects: Project[] = [
             "Its spotted wings are cut into flat, translucent layers of mint and grey " +
             "and set against sweeping violet curves, so the butterfly seems to settle " +
             "right where the shapes meet.",
-        img: "agame.jpg",
+        img: "agamemnon/agamemnon.jpg",
     },
     {
         slug: "flow",
@@ -44,7 +72,7 @@ export const projects: Project[] = [
             "Plants grow, curl and droop from a single horizon line: arching stems " +
             "ending in heart-shaped leaves, a spiralling fern, flowers in slender vases. " +
             "Some are left as pure linework, others get a soft wash of green or violet.",
-        img: "tattoos/Flow_1.jpg",
-        gallery: ["tattoos/Flow_2.jpg", "tattoos/Flow_3.jpg"],
+        img: "flow/flow-1.jpg",
+        gallery: ["flow/flow-2.jpg", "flow/flow-3.jpg"],
     },
 ];
