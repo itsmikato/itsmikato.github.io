@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Project = {
     title: string;
@@ -19,10 +19,21 @@ export default function ProjectDetail({ project, backToPortfolio }: Props) {
     // encodeURI handles file names with spaces (e.g. "Pink Koi32.jpg")
     const src = (path: string) => encodeURI(path);
 
+    // Esc closes the page
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => e.key === "Escape" && backToPortfolio();
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
+    }, [backToPortfolio]);
+
+    // clicks on the artwork or thumbnails shouldn't close the page
+    const keepOpen = (e: React.MouseEvent) => e.stopPropagation();
+
     return (
-        <div className="project-detail flex flex-col items-center">
-            <button className="back-btn" onClick={backToPortfolio}>
-                ← Back
+        // tapping anywhere outside the artwork closes the page
+        <div className="project-detail flex flex-col items-center" onClick={backToPortfolio}>
+            <button className="close-btn" onClick={backToPortfolio} aria-label="Close">
+                ✕
             </button>
 
             <div className="w-full max-w-3xl mt-16 px-4">
@@ -30,10 +41,11 @@ export default function ProjectDetail({ project, backToPortfolio }: Props) {
                     src={src(images[active])}
                     alt={`${project.title} – image ${active + 1} of ${images.length}`}
                     className="w-full max-h-[60vh] object-contain rounded-lg shadow-lg mb-4"
+                    onClick={keepOpen}
                 />
 
                 {images.length > 1 && (
-                    <div className="gallery-thumbs">
+                    <div className="gallery-thumbs" onClick={keepOpen}>
                         {images.map((path, idx) => (
                             <button
                                 key={path}
