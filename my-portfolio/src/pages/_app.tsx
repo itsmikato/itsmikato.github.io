@@ -4,6 +4,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { Jost } from "next/font/google";
 import CanvasBackground from "../components/CanvasBackground";
+import VisitorCounter from "../components/VisitorCounter";
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from "../data/site";
 
 /* Free, Futura-inspired fallback – self-hosted by next/font at build time */
@@ -42,6 +43,7 @@ export default function App({ Component, pageProps }: AppProps) {
       )}
 
       <Component {...pageProps} />
+      <VisitorCounter />
     </>
   );
 }
