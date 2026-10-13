@@ -8,7 +8,7 @@ import CanvasBackground from "../components/CanvasBackground";
 /* Free, Futura-inspired fallback – self-hosted by next/font at build time */
 const jost = Jost({ subsets: ["latin"], weight: ["400", "500", "600"] });
 
-/* Shared by every page, so the background keeps animating between pages */
+/* Layout shared by every page; the background and header only show on the grid */
 export default function App({ Component, pageProps }: AppProps) {
   const isHome = useRouter().pathname === "/";
 
@@ -27,10 +27,9 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta name="theme-color" content="#0e0e0e" />
       </Head>
 
-      <CanvasBackground />
-
       {isHome && (
         <>
+          <CanvasBackground />
           <h1 className="title">Mikato</h1>
           <a
               className="insta-link"
