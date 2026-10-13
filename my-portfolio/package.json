@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "export": "next export",
     "deploy": "next build && touch out/.nojekyll && gh-pages -d out --dotfiles",
     "start": "next start",
     "lint": "next lint"
