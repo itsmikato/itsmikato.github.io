@@ -28,9 +28,16 @@ export default function CanvasBackground() {
         const canvas = canvasRef.current!;
         const ctx = canvas.getContext("2d")!;
         let redraw: (() => void) | null = null;
+        // w/h are CSS pixels; the bitmap is scaled up for sharp retina rendering
+        let w = 0;
+        let h = 0;
         const resize = () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            w = canvas.clientWidth;
+            h = canvas.clientHeight;
+            canvas.width = Math.round(w * dpr);
+            canvas.height = Math.round(h * dpr);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
             redraw?.();
         };
         resize();
@@ -41,8 +48,8 @@ export default function CanvasBackground() {
         const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
 
         const shapes: Shape[] = Array.from({ length: SHAPE_COUNT }, () => ({
-            x: rnd(0, canvas.width),
-            y: rnd(0, canvas.height),
+            x: rnd(0, w),
+            y: rnd(0, h),
             size: rnd(24, 60),
             vx: rnd(-MAX_SPEED, MAX_SPEED),
             vy: rnd(-MAX_SPEED, MAX_SPEED),
@@ -82,7 +89,7 @@ export default function CanvasBackground() {
         const draw = () => {
             // repaint background
             ctx.fillStyle = "#0e0e0e";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillRect(0, 0, w, h);
             shapes.forEach(drawShape);
         };
 
@@ -96,9 +103,9 @@ export default function CanvasBackground() {
 
                 // bounce off edges (abs() so shapes can't get stuck after a resize)
                 if (s.x < 0) s.vx = Math.abs(s.vx);
-                if (s.x > canvas.width) s.vx = -Math.abs(s.vx);
+                if (s.x > w) s.vx = -Math.abs(s.vx);
                 if (s.y < 0) s.vy = Math.abs(s.vy);
-                if (s.y > canvas.height) s.vy = -Math.abs(s.vy);
+                if (s.y > h) s.vy = -Math.abs(s.vy);
             });
             draw();
         };
@@ -121,7 +128,7 @@ export default function CanvasBackground() {
     return (
         <canvas
             ref={canvasRef}
-            className="fixed top-0 left-0 w-full h-full z-[1]"
+            className="background-canvas"
         />
     );
 }

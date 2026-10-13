@@ -15,27 +15,43 @@
 /* ------------------------------------------------------------------ */
 /*  Legacy / global base styles                                       */
 /* ------------------------------------------------------------------ */
+/* The page itself scrolls (not <body>), so iOS Safari can shrink its bars */
 html,
 body {
   margin: 0;
   padding: 0;
-  overflow-y: auto;
   background-color: #0e0e0e;
   font-family: "Helvetica", Arial, sans-serif;
   color: #fff;
-  height: 100%;
+}
+
+/* the grid behind an open project stays put (class set by ProjectDetail) */
+html.detail-open,
+html.detail-open body {
+  overflow: hidden;
+}
+
+/* Spacing that also clears the notch / Dynamic Island / home indicator
+   (the page uses viewport-fit=cover, so it extends under them) */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
 }
 
 /* ------------------------------------------------------------------ */
 /*  Background canvas                                                 */
 /* ------------------------------------------------------------------ */
-canvas#background {
+.background-canvas {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: 100vh;
+  height: 100lvh;                     /* reach under Safari's toolbars */
   z-index: 1;
+  pointer-events: none;
 }
 
 /* ------------------------------------------------------------------ */
@@ -43,8 +59,8 @@ canvas#background {
 /* ------------------------------------------------------------------ */
 .title {
   position: fixed;
-  top: 20px;
-  left: 30px;
+  top: calc(20px + var(--safe-top));
+  left: calc(30px + var(--safe-left));
   font-size: 1.5em;
   font-weight: normal;
   opacity: 0.7;
@@ -55,8 +71,8 @@ canvas#background {
 /* ---------- Instagram link (mirrors the title, top right) --------- */
 .insta-link {
   position: fixed;
-  top: 20px;
-  right: 30px;
+  top: calc(20px + var(--safe-top));
+  right: calc(30px + var(--safe-right));
   line-height: 1.5em;
   margin-top: 0.42em;                 /* align with the h1 baseline   */
   font-family: var(--font-display);
@@ -76,9 +92,9 @@ canvas#background {
 /* ------------------------------------------------------------------ */
 .portfolio-container {
   position: relative;
-  margin-top: 100px;
+  margin-top: calc(100px + var(--safe-top));
   margin-bottom: 100px;
-  padding-bottom: 50px;
+  padding-bottom: calc(50px + var(--safe-bottom));
   width: 80%;
   max-width: 1200px;
   margin-left: auto;
@@ -139,24 +155,26 @@ canvas#background {
 /* ------------------------------------------------------------------ */
 .project-detail {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background: #0e0e0e;
   z-index: 10;
   color: #fff;
-  padding: 0 0 48px;
+  padding: var(--safe-top) var(--safe-right) calc(48px + var(--safe-bottom)) var(--safe-left);
   overflow-y: auto;
   overscroll-behavior: contain;       /* don't hand scrolling on to the grid */
 }
 
-/* the grid behind an open project stays put (class set by ProjectDetail) */
-body.detail-open {
-  overflow: hidden;
-}
-
+/* sized to the picture itself (not a letterboxed box) so the rounded
+   corners sit on the artwork; svh = the visible height with Safari's bars */
 .project-detail .main-image {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 72vh;
+  max-height: 72svh;
+  margin-left: auto;
+  margin-right: auto;
   touch-action: pan-y;                /* horizontal swipes switch images */
   user-select: none;
   -webkit-user-drag: none;
@@ -204,8 +222,8 @@ body.detail-open {
 
 .close-btn {
   position: fixed;
-  top: 14px;
-  right: 18px;
+  top: calc(14px + var(--safe-top));
+  right: calc(18px + var(--safe-right));
   width: 40px;
   height: 40px;
   display: flex;

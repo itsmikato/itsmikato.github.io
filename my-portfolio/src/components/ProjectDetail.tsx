@@ -38,8 +38,9 @@ export default function ProjectDetail({ project }: { project: Project }) {
 
     // keep the grid from scrolling behind the open project
     useEffect(() => {
-        document.body.classList.add("detail-open");
-        return () => document.body.classList.remove("detail-open");
+        const root = document.documentElement;
+        root.classList.add("detail-open");
+        return () => root.classList.remove("detail-open");
     }, []);
 
     // swipe left/right on the main image to switch images
@@ -73,7 +74,7 @@ export default function ProjectDetail({ project }: { project: Project }) {
                 <img
                     src={imageUrl(images[active], "lg")}
                     alt={`${project.title} – image ${active + 1} of ${images.length}`}
-                    className="main-image w-full max-h-[60vh] object-contain rounded-lg shadow-lg mb-4"
+                    className="main-image rounded-lg shadow-lg mb-4"
                     onClick={keepOpen}
                     onTouchStart={onTouchStart}
                     onTouchEnd={onTouchEnd}
