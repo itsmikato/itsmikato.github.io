@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# generated from artwork/ by scripts/optimize-images.mjs
+/public/images/

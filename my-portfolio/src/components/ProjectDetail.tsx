@@ -1,23 +1,18 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import type { Project } from "../data/projects";
+import { imageUrl } from "../lib/images";
+import { wasOpenedFromGrid } from "../lib/nav";
 
-type Project = {
-    title: string;
-    content: string;
-    img: string;          // must start with a leading “/”
-    gallery?: string[];
-};
-
-type Props = {
-    project: Project;
-    backToPortfolio: () => void;
-};
-
-export default function ProjectDetail({ project, backToPortfolio }: Props) {
+export default function ProjectDetail({ project }: { project: Project }) {
+    const router = useRouter();
     const images = [project.img, ...(project.gallery ?? [])];
     const [active, setActive] = useState(0);
 
-    // encodeURI handles file names with spaces (e.g. "Pink Koi32.jpg")
-    const src = (path: string) => encodeURI(path);
+    const backToPortfolio = useCallback(() => {
+        if (wasOpenedFromGrid()) router.back();
+        else router.push("/", undefined, { scroll: false });
+    }, [router]);
 
     // Esc closes the page
     useEffect(() => {
@@ -38,7 +33,7 @@ export default function ProjectDetail({ project, backToPortfolio }: Props) {
 
             <div className="w-full max-w-3xl mt-16 px-4">
                 <img
-                    src={src(images[active])}
+                    src={imageUrl(images[active], "lg")}
                     alt={`${project.title} – image ${active + 1} of ${images.length}`}
                     className="w-full max-h-[60vh] object-contain rounded-lg shadow-lg mb-4"
                     onClick={keepOpen}
@@ -54,7 +49,7 @@ export default function ProjectDetail({ project, backToPortfolio }: Props) {
                                 aria-label={`Show image ${idx + 1} of ${images.length}`}
                                 aria-pressed={idx === active}
                             >
-                                <img src={src(path)} alt="" loading="lazy" />
+                                <img src={imageUrl(path, "sm")} alt="" />
                             </button>
                         ))}
                     </div>
