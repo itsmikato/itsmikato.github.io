@@ -15,6 +15,11 @@ type Shape = {
 
 const NEON = ["#39ff14", "#00ffff", "#ff10f0", "#f5ff00", "#ff6ec7"];
 
+// keep the background quiet so the artwork stays the focus
+const SHAPE_COUNT = 14;
+const SHAPE_ALPHA = 0.28;
+const MAX_SPEED = 0.25;
+
 export default function CanvasBackground() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const animId = useRef<number | null>(null);
@@ -22,9 +27,11 @@ export default function CanvasBackground() {
     useEffect(() => {
         const canvas = canvasRef.current!;
         const ctx = canvas.getContext("2d")!;
+        let redraw: (() => void) | null = null;
         const resize = () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+            redraw?.();
         };
         resize();
         window.addEventListener("resize", resize);
@@ -33,14 +40,14 @@ export default function CanvasBackground() {
         const rnd = (min: number, max: number) => Math.random() * (max - min) + min;
         const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
 
-        const shapes: Shape[] = Array.from({ length: 50 }, () => ({
+        const shapes: Shape[] = Array.from({ length: SHAPE_COUNT }, () => ({
             x: rnd(0, canvas.width),
             y: rnd(0, canvas.height),
-            size: rnd(40, 100),
-            vx: rnd(-0.8, 0.8),
-            vy: rnd(-0.8, 0.8),
+            size: rnd(24, 60),
+            vx: rnd(-MAX_SPEED, MAX_SPEED),
+            vy: rnd(-MAX_SPEED, MAX_SPEED),
             rotation: rnd(0, Math.PI * 2),
-            vr: rnd(-0.01, 0.01),
+            vr: rnd(-0.003, 0.003),
             type: Math.random() < 0.5 ? "triangle" : "rect",
             colorA: pick(NEON),
             colorB: pick(NEON),
@@ -51,6 +58,7 @@ export default function CanvasBackground() {
             ctx.save();
             ctx.translate(s.x, s.y);
             ctx.rotate(s.rotation);
+            ctx.globalAlpha = SHAPE_ALPHA;
 
             // fluorescent gradient fill
             const grad = ctx.createLinearGradient(-s.size, -s.size, s.size, s.size);
@@ -71,28 +79,38 @@ export default function CanvasBackground() {
             ctx.restore();
         };
 
-        const animate = () => {
-            animId.current = requestAnimationFrame(animate);
-
+        const draw = () => {
             // repaint background
             ctx.fillStyle = "#0e0e0e";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+            shapes.forEach(drawShape);
+        };
 
-            // update & draw shapes
+        const animate = () => {
+            animId.current = requestAnimationFrame(animate);
+
             shapes.forEach(s => {
                 s.x += s.vx;
                 s.y += s.vy;
                 s.rotation += s.vr;
 
-                // bounce off edges
-                if (s.x < 0 || s.x > canvas.width) s.vx *= -1;
-                if (s.y < 0 || s.y > canvas.height) s.vy *= -1;
-
-                drawShape(s);
+                // bounce off edges (abs() so shapes can't get stuck after a resize)
+                if (s.x < 0) s.vx = Math.abs(s.vx);
+                if (s.x > canvas.width) s.vx = -Math.abs(s.vx);
+                if (s.y < 0) s.vy = Math.abs(s.vy);
+                if (s.y > canvas.height) s.vy = -Math.abs(s.vy);
             });
+            draw();
         };
 
-        animate();
+        // respect the OS "reduce motion" setting: draw one still frame
+        const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (reduceMotion) {
+            redraw = draw;
+            draw();
+        } else {
+            animate();
+        }
 
         return () => {
             if (animId.current !== null) cancelAnimationFrame(animId.current);

@@ -28,7 +28,7 @@ export default function ProjectDetail({ project, backToPortfolio }: Props) {
                     className="w-full max-h-[60vh] object-contain rounded-lg shadow-lg mb-8"
                 />
 
-                <h2 className="text-3xl font-semibold mb-4 font-[FuturaTTC]">
+                <h2 className="text-3xl font-semibold mb-4">
                     {project.title}
                 </h2>
 

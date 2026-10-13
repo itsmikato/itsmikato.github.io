@@ -5,16 +5,11 @@
 @tailwind utilities;
 
 /* ------------------------------------------------------------------ */
-/*  Futura – quick TTC embed (good for local testing)                 */
-/*  For full cross-browser support you should split/convert to WOFF2  */
-/*  and declare each weight separately.                               */
+/*  Display font – the visitor's own Futura if installed (macOS/iOS),  */
+/*  otherwise Jost (loaded in _app.tsx).                               */
 /* ------------------------------------------------------------------ */
-@font-face {
-  font-family: "FuturaTTC";
-  src: url("/fonts/Futura.ttc") format("truetype");   /* adjust path if needed */
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
+:root {
+  --font-display: Futura, var(--font-jost), Helvetica, Arial, sans-serif;
 }
 
 /* ------------------------------------------------------------------ */
@@ -54,7 +49,7 @@ canvas#background {
   font-weight: normal;
   opacity: 0.7;
   z-index: 2;
-  font-family: "FuturaTTC", Helvetica, Arial, sans-serif;
+  font-family: var(--font-display);
 }
 
 /* ------------------------------------------------------------------ */
@@ -119,7 +114,7 @@ canvas#background {
   justify-content: center;
   align-items: center;
 
-  font-family: "FuturaTTC", Helvetica, Arial, sans-serif;
+  font-family: var(--font-display);
   font-size: 1.35rem;
   letter-spacing: 0.04em;
 
@@ -152,6 +147,10 @@ canvas#background {
   color: #fff;
   padding: 50px;
   overflow-y: auto;
+}
+
+.project-detail h2 {
+  font-family: var(--font-display);
 }
 
 .back-btn {
