@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import type { Project } from "../data/projects";
 import { imageUrl } from "../lib/images";
@@ -9,17 +9,54 @@ export default function ProjectDetail({ project }: { project: Project }) {
     const images = [project.img, ...(project.gallery ?? [])];
     const [active, setActive] = useState(0);
 
+    // guard: one tap can reach both the ✕ and the backdrop, and going back
+    // twice would leave the site
+    const closing = useRef(false);
     const backToPortfolio = useCallback(() => {
+        if (closing.current) return;
+        closing.current = true;
         if (wasOpenedFromGrid()) router.back();
         else router.push("/", undefined, { scroll: false });
     }, [router]);
 
-    // Esc closes the page
+    // step through the gallery, wrapping around at either end
+    const step = useCallback(
+        (dir: 1 | -1) => setActive((i) => (i + dir + images.length) % images.length),
+        [images.length],
+    );
+
+    // Esc closes the page, arrow keys switch images
     useEffect(() => {
-        const onKey = (e: KeyboardEvent) => e.key === "Escape" && backToPortfolio();
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape") backToPortfolio();
+            else if (e.key === "ArrowRight") step(1);
+            else if (e.key === "ArrowLeft") step(-1);
+        };
         window.addEventListener("keydown", onKey);
         return () => window.removeEventListener("keydown", onKey);
-    }, [backToPortfolio]);
+    }, [backToPortfolio, step]);
+
+    // keep the grid from scrolling behind the open project
+    useEffect(() => {
+        document.body.classList.add("detail-open");
+        return () => document.body.classList.remove("detail-open");
+    }, []);
+
+    // swipe left/right on the main image to switch images
+    const touchStart = useRef<{ x: number; y: number } | null>(null);
+    const onTouchStart = (e: React.TouchEvent) => {
+        const t = e.touches[0];
+        touchStart.current = { x: t.clientX, y: t.clientY };
+    };
+    const onTouchEnd = (e: React.TouchEvent) => {
+        const start = touchStart.current;
+        touchStart.current = null;
+        if (!start || images.length < 2) return;
+        const t = e.changedTouches[0];
+        const dx = t.clientX - start.x;
+        const dy = t.clientY - start.y;
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) step(dx < 0 ? 1 : -1);
+    };
 
     // clicks on the artwork or thumbnails shouldn't close the page
     const keepOpen = (e: React.MouseEvent) => e.stopPropagation();
@@ -27,7 +64,8 @@ export default function ProjectDetail({ project }: { project: Project }) {
     return (
         // tapping anywhere outside the artwork closes the page
         <div className="project-detail flex flex-col items-center" onClick={backToPortfolio}>
-            <button className="close-btn" onClick={backToPortfolio} aria-label="Close">
+            {/* the click bubbles to the backdrop, which closes the page */}
+            <button className="close-btn" aria-label="Close">
                 ✕
             </button>
 
@@ -35,8 +73,11 @@ export default function ProjectDetail({ project }: { project: Project }) {
                 <img
                     src={imageUrl(images[active], "lg")}
                     alt={`${project.title} – image ${active + 1} of ${images.length}`}
-                    className="w-full max-h-[60vh] object-contain rounded-lg shadow-lg mb-4"
+                    className="main-image w-full max-h-[60vh] object-contain rounded-lg shadow-lg mb-4"
                     onClick={keepOpen}
+                    onTouchStart={onTouchStart}
+                    onTouchEnd={onTouchEnd}
+                    draggable={false}
                 />
 
                 {images.length > 1 && (
