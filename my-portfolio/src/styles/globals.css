@@ -115,8 +115,10 @@ body {
 /* ------------------------------------------------------------------ */
 /*  Project tiles                                                     */
 /* ------------------------------------------------------------------ */
+/* column layout: artwork centered in the free space, titles line up per row */
 .project {
-  display: block;
+  display: flex;
+  flex-direction: column;
   background: rgba(255, 255, 255, 0.08);
   padding: 15px;
   border-radius: 8px;
@@ -137,6 +139,7 @@ body {
   display: block;
   width: 100%;
   height: auto;
+  margin: auto 0;
   border-radius: 6px;
 }
 
@@ -187,6 +190,34 @@ body {
 
 .project-detail h2 {
   font-family: var(--font-display);
+}
+
+.detail-layout {
+  width: 100%;
+  max-width: 768px;
+  margin: 64px auto 0;
+  padding: 0 16px;
+}
+
+/* wide screens: artwork left, title and text right, all above the fold */
+@media (min-width: 1024px) {
+  .detail-layout {
+    max-width: 1200px;
+    min-height: calc(100vh - 112px);
+    padding: 0 48px;
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(280px, 2fr);
+    gap: 64px;
+    align-items: center;
+  }
+
+  .project-detail .main-image {
+    max-height: calc(100vh - 220px);
+  }
+
+  .detail-text h2 {
+    margin-top: 0;
+  }
 }
 
 /* ---------- gallery thumbnails ---------------------------------- */

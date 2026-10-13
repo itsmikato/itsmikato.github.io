@@ -57,13 +57,15 @@ export default function ProjectDetail({ project }: { project: Project }) {
 
     return (
         // tapping anywhere outside the artwork closes the page
-        <div className="project-detail flex flex-col items-center" onClick={backToPortfolio}>
+        <div className="project-detail" onClick={backToPortfolio}>
             {/* the click bubbles to the backdrop, which closes the page */}
             <button className="close-btn" aria-label="Close">
                 ✕
             </button>
 
-            <div className="w-full max-w-3xl mt-16 px-4">
+            {/* stacked on phones, artwork | text side by side on wide screens */}
+            <div className="detail-layout">
+              <div className="detail-media">
                 <img
                     src={imageUrl(images[active], "lg")}
                     {...imageSize(images[active])}
@@ -90,7 +92,9 @@ export default function ProjectDetail({ project }: { project: Project }) {
                         ))}
                     </div>
                 )}
+              </div>
 
+              <div className="detail-text">
                 <h2 className="text-3xl font-semibold mt-4 mb-4">
                     {project.title}
                 </h2>
@@ -98,6 +102,7 @@ export default function ProjectDetail({ project }: { project: Project }) {
                 <p className="text-lg leading-relaxed whitespace-pre-line">
                     {project.content}
                 </p>
+              </div>
             </div>
         </div>
     );
