@@ -2,7 +2,7 @@
 
 // Visitor counter (goatcounter.com, cookie-free): the code you picked when signing
 // up, i.e. "<code>.goatcounter.com". Leave empty to switch counting off.
-export const GOATCOUNTER_CODE = "";
+export const GOATCOUNTER_CODE = "itsmikato";
 
 export const INSTAGRAM_HANDLE = "mikatonana";
 export const INSTAGRAM_URL = `https://www.instagram.com/${INSTAGRAM_HANDLE}/`;
