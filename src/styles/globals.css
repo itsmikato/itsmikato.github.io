@@ -64,28 +64,32 @@ body {
 /*  Site title                                                        */
 /* ------------------------------------------------------------------ */
 /* the header scrolls away with the page instead of floating over the cards */
-.title {
+/* Title left, links right, in one row whose items share a text baseline, so
+   "Mikato", "About" and "@mikatonana" sit on exactly the same line.
+   It scrolls away with the page instead of floating over the cards. */
+.site-header {
   position: absolute;
-  top: calc(20px + var(--safe-top));
+  top: calc(36px + var(--safe-top));
   left: calc(30px + var(--safe-left));
-  font-size: 1.5em;
-  font-weight: normal;
-  opacity: 0.7;
-  z-index: 2;
+  right: calc(30px + var(--safe-right));
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 20px;
+  z-index: 3;                         /* above the grid's top padding, or taps miss */
   font-family: var(--font-display);
 }
 
-/* ---------- About + Instagram links (mirror the title, top right) - */
+.title {
+  margin: 0;
+  font-size: 1.5em;
+  font-weight: normal;
+  opacity: 0.7;
+}
+
 .header-links {
-  position: absolute;
-  top: calc(20px + var(--safe-top));
-  right: calc(30px + var(--safe-right));
   display: flex;
   gap: 20px;
-  line-height: 1.5em;
-  margin-top: 0.42em;                 /* align with the h1 baseline   */
-  font-family: var(--font-display);
-  z-index: 3;                         /* above the grid's top padding, or taps miss */
 }
 
 .header-links a {

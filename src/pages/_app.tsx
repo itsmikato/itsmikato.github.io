@@ -32,13 +32,15 @@ export default function App({ Component, pageProps }: AppProps) {
       {isHome && (
         <>
           <CanvasBackground />
-          <h1 className="title">Mikato</h1>
-          <nav className="header-links">
-            <a href="#about">About</a>
-            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">
-              @{INSTAGRAM_HANDLE}
-            </a>
-          </nav>
+          <header className="site-header">
+            <h1 className="title">Mikato</h1>
+            <nav className="header-links">
+              <a href="#about">About</a>
+              <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">
+                @{INSTAGRAM_HANDLE}
+              </a>
+            </nav>
+          </header>
         </>
       )}
 
