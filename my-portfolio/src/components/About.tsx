@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import {
     ABOUT_TEXT,
     EMAIL_DOMAIN,
@@ -8,10 +8,14 @@ import {
     INSTAGRAM_URL,
 } from "../data/site";
 
+// put the address together in the browser only (see src/data/site.ts):
+// null while rendering the static HTML, the real address once in the browser
+const noSubscribe = () => () => {};
+const browserEmail = () => `${EMAIL_USER}@${EMAIL_DOMAIN}`;
+const noEmail = () => null;
+
 export default function About() {
-    // put the address together in the browser only (see src/data/site.ts)
-    const [email, setEmail] = useState<string | null>(null);
-    useEffect(() => setEmail(`${EMAIL_USER}@${EMAIL_DOMAIN}`), []);
+    const email = useSyncExternalStore(noSubscribe, browserEmail, noEmail);
 
     return (
         <section id="about" className="about">

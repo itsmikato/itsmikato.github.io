@@ -14,15 +14,14 @@ Then open http://localhost:3000.
 
 ## Deploy
 
-```bash
-npm run deploy
-```
-
-Builds a static export into `out/` and publishes it to the `gh-pages` branch.
+Push to `main` – a GitHub Action (`.github/workflows/deploy.yml`) builds the site and
+publishes it to GitHub Pages, usually within two minutes. Progress shows in the repo's
+Actions tab. To check the build locally first: `npm run build` (output in `out/`).
 
 ## Where things live
 
-- `src/components/Portfolio.tsx` – project list (titles, descriptions, images)
+- `src/data/projects.ts` – projects: titles, descriptions, artwork and process
+- `src/data/site.ts` – about text, email and Instagram
 - `src/components/CanvasBackground.tsx` – animated background
 - `src/styles/globals.css` – site styles
-- `public/resources/` – artwork images
+- `artwork/` – original artwork, one folder per project (see `artwork/README.md`)
