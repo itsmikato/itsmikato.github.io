@@ -72,22 +72,27 @@ body {
   font-family: var(--font-display);
 }
 
-/* ---------- Instagram link (mirrors the title, top right) --------- */
-.insta-link {
+/* ---------- About + Instagram links (mirror the title, top right) - */
+.header-links {
   position: absolute;
   top: calc(20px + var(--safe-top));
   right: calc(30px + var(--safe-right));
+  display: flex;
+  gap: 20px;
   line-height: 1.5em;
   margin-top: 0.42em;                 /* align with the h1 baseline   */
   font-family: var(--font-display);
+  z-index: 2;
+}
+
+.header-links a {
   color: #fff;
   opacity: 0.7;
   text-decoration: none;
-  z-index: 2;
   transition: opacity 0.2s ease;
 }
 
-.insta-link:hover {
+.header-links a:hover {
   opacity: 1;
 }
 
@@ -97,13 +102,88 @@ body {
 .portfolio-container {
   position: relative;
   margin-top: calc(100px + var(--safe-top));
-  margin-bottom: 100px;
-  padding-bottom: calc(50px + var(--safe-bottom));
+  margin-bottom: 96px;                /* space before the About section */
   width: 80%;
   max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
   z-index: 2;
+}
+
+html {
+  scroll-behavior: smooth;            /* the "About" link glides down */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  About section (below the grid)                                    */
+/* ------------------------------------------------------------------ */
+/* frosted panel like the cards, so the drifting shapes don't run through the text */
+.about {
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+  width: 80%;
+  max-width: 640px;
+  margin: 0 auto calc(96px + var(--safe-bottom));
+  padding: 28px 28px 32px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  scroll-margin-top: 40px;
+  font-size: 1.125rem;
+  line-height: 1.7;
+}
+
+.about h2 {
+  margin: 0 0 16px;
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.about p {
+  margin: 0 0 14px;
+  opacity: 0.85;
+}
+
+.about-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 24px;
+  margin-top: 28px;
+}
+
+.about-links a {
+  color: #fff;
+  opacity: 0.75;
+  text-decoration: none;
+  transition: opacity 0.2s ease, background 0.2s ease;
+}
+
+.about-links a:hover {
+  opacity: 1;
+}
+
+.about-links .email-btn {
+  padding: 10px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  opacity: 1;
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+}
+
+.about-links .email-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .portfolio {

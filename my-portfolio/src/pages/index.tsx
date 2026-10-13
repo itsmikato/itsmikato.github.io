@@ -1,3 +1,4 @@
+import About from "../components/About";
 import Meta from "../components/Meta";
 import Portfolio from "../components/Portfolio";
 import { projects } from "../data/projects";
@@ -13,6 +14,7 @@ export default function Home() {
             image={ogImageUrl(projects[0].img)}
         />
         <Portfolio />
+        <About />
       </>
   );
 }

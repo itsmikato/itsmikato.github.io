@@ -4,6 +4,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { Jost } from "next/font/google";
 import CanvasBackground from "../components/CanvasBackground";
+import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from "../data/site";
 
 /* Free, Futura-inspired fallback – self-hosted by next/font at build time */
 const jost = Jost({ subsets: ["latin"], weight: ["400", "500", "600"] });
@@ -31,14 +32,12 @@ export default function App({ Component, pageProps }: AppProps) {
         <>
           <CanvasBackground />
           <h1 className="title">Mikato</h1>
-          <a
-              className="insta-link"
-              href="https://www.instagram.com/mikatonana/"
-              target="_blank"
-              rel="noopener noreferrer"
-          >
-            @mikatonana
-          </a>
+          <nav className="header-links">
+            <a href="#about">About</a>
+            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">
+              @{INSTAGRAM_HANDLE}
+            </a>
+          </nav>
         </>
       )}
 
