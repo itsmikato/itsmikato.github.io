@@ -25,9 +25,10 @@ export const projects: Project[] = [
         title: "Good Llama",
         content:
             "Good morning, good llama.\n\n" +
-            "A five-second animated loop: a llama turns a full circle inside a ring " +
-            "of teal lettering, drawn in black with fine outlines and patches of deep " +
-            "blue. Made in a vertical 9:16 format, the shape of a phone screen.",
+            "A hand-drawn llama – black, with fine outlines and patches of deep blue – " +
+            "set inside a ring of teal lettering. The drawing is made by hand; the " +
+            "five-second turnaround loop was then animated with AI. Made in a vertical " +
+            "9:16 format, the shape of a phone screen.",
         img: "good-llama/good-llama-poster.png",
         main: "good-llama/good-llama.mp4",
         process: [
