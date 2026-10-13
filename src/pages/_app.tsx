@@ -2,13 +2,19 @@ import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { Jost } from "next/font/google";
+import localFont from "next/font/local";
 import CanvasBackground from "../components/CanvasBackground";
 import VisitorCounter from "../components/VisitorCounter";
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from "../data/site";
 
-/* Free, Futura-inspired fallback – self-hosted by next/font at build time */
-const jost = Jost({ subsets: ["latin"], weight: ["400", "500", "600"] });
+/* Jost: a free (OFL, see src/fonts/) Futura-inspired fallback for visitors without
+   Futura. Kept in the repo rather than fetched from Google Fonts at build time,
+   so builds don't depend on (or fail because of) Google's servers. */
+const jost = localFont({
+  src: "../fonts/jost-latin-variable.woff2",
+  weight: "100 900",
+  display: "swap",
+});
 
 /* Layout shared by every page; the background and header only show on the grid */
 export default function App({ Component, pageProps }: AppProps) {
