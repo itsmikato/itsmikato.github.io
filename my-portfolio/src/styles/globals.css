@@ -52,6 +52,25 @@ canvas#background {
   font-family: var(--font-display);
 }
 
+/* ---------- Instagram link (mirrors the title, top right) --------- */
+.insta-link {
+  position: fixed;
+  top: 20px;
+  right: 30px;
+  line-height: 1.5em;
+  margin-top: 0.42em;                 /* align with the h1 baseline   */
+  font-family: var(--font-display);
+  color: #fff;
+  opacity: 0.7;
+  text-decoration: none;
+  z-index: 2;
+  transition: opacity 0.2s ease;
+}
+
+.insta-link:hover {
+  opacity: 1;
+}
+
 /* ------------------------------------------------------------------ */
 /*  Portfolio layout                                                  */
 /* ------------------------------------------------------------------ */
