@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Good Llama – live · Mikato</title>
+  <style>
+    @font-face { font-family: Unb; src: url("unbounded-latin-variable.woff2") format("woff2"); font-weight: 300 900; }
+    html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+    html { touch-action: pan-y; }
+    .stage { position: fixed; inset: 0; display: grid; place-items: center; perspective: 1100px; }
+    .head, .ring { grid-area: 1 / 1; width: min(92vw, 92vh); aspect-ratio: 1; }
+    .head { position: relative; transform-style: preserve-3d; }
+    .layer { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+    .ring text { font: 600 50px Unb, sans-serif; fill: #6ccfcf; letter-spacing: 3px; }
+    /* blinks squash each eye around its own centre (as % of the view box) */
+    .eye-left { transform-origin: 38.1% 45.6%; }
+    .eye-right { transform-origin: 61.6% 45.0%; }
+  </style>
+</head>
+<body>
+<div class="stage">
+  <!-- the lettering stays flat and turns slowly; only the head turns in space -->
+  <svg class="ring" viewBox="302 0 620 620" aria-hidden="true">
+    <defs><path id="circle" d="M612 300 m-272 0 a272 272 0 1 1 544 0 a272 272 0 1 1 -544 0"/></defs>
+    <g class="ring-turn"><text><textPath href="#circle" textLength="1700" lengthAdjust="spacing">GOOD MORNING · GOOD LLAMA · GOOD MORNING · GOOD LLAMA ·</textPath></text></g>
+  </svg>
+  <div class="head">
+    <svg class="layer outline" data-z="0" viewBox="302 0 620 620" aria-hidden="true"><path d="M534.02 291.52 C533.06 293.42 531.62 296.11 529.67 299.21 C522.69 310.26 517.07 314.06 518.38 317.43 C519.62 320.61 525.14 318.66 527.93 322.64 C530.81 326.76 526.65 331.31 527.06 339.13 C527.47 346.95 531.86 346.75 535.74 357.35 C540.86 371.35 535.41 377.76 541.81 384.25 C545.31 387.78 548.76 387.72 552.23 392.92 C554.79 396.76 555.35 400.44 555.7 402.47 C557.04 410.13 560.75 431.34 572.19 438.04 C578.79 441.91 582.01 437.47 587.81 441.51 C594.57 446.23 594.65 455.39 596.49 471.01 C597.54 479.86 599.32 492.25 602.57 507.24 C615.25 510.42 626.94 513.18 637.74 515.55 C724.98 534.75 753.08 528.87 758.98 516.68 C765.54 503.13 744.49 482.26 739.71 421.56 C738.85 410.66 739.71 413.61 738.84 402.47 C734.94 352.41 718.71 309.31 719.74 287.94 C719.83 286.15 720.2 281.09 719.74 274.05 C719.22 266.05 718.18 263.57 718.01 258.43 C717.95 256.68 718.01 255.19 718.17 253.85 C718.72 248.96 720.48 245.97 721.88 238.87 C725.66 219.69 718.21 214.41 724.01 203.69 C727.26 197.69 729.91 198.77 736.8 190.9 C741.37 185.69 745.61 179.06 750.99 163.86 C759.3 140.35 763.6 128.59 762.27 115.26 C759.68 89.25 740.9 63.85 729.29 65.8 C725.84 66.39 725.17 69.03 709.33 95.31 C698.67 112.98 698.82 112.03 696.31 117.0 C685.83 137.73 687.82 145.14 682.15 147.07 C672.03 150.52 664.34 125.9 640.49 123.64 C636.78 123.29 638.18 124.04 613.58 126.24 C593.46 128.05 595.17 127.31 591.8 128.01 C566.6 133.19 560.94 155.85 548.49 153.15 C541.48 151.63 543.09 144.4 528.35 128.01 C517.76 116.23 516.03 118.98 506.83 108.03 C496.67 95.95 496.35 89.74 486.23 82.18 C481.0 78.26 473.98 73.0 468.64 75.05 C458.28 79.03 459.56 108.46 462.56 125.38 C465.14 139.94 473.0 167.94 502.48 197.4 C499.68 241.82 489.37 232.58 489.76 234.36 C491.36 241.69 496.14 250.76 503.98 256.96 C511.47 262.91 518.82 263.89 518.83 267.62 C518.86 272.42 506.78 275.52 507.21 276.99 C507.44 277.81 511.4 277.83 526.91 274.73 C526.56 276.07 525.85 279.49 527.24 283.45 C527.56 284.38 527.96 285.22 528.4 285.97" fill="#000" stroke="#a3a3a3" stroke-width="1.6" stroke-linejoin="round"/><path d="M519.18 127.92 C524.42 133.46 532.86 142.38 532.48 153.87 C532.22 161.59 528.07 168.33 524.88 173.5 C521.02 179.78 517.95 182.05 514.44 189.33 C512.14 194.09 510.96 198.3 510.32 201.04 C496.41 185.91 487.46 171.45 481.84 160.84 C479.57 156.56 468.28 134.84 466.33 115.26 C465.05 102.52 467.59 91.52 467.59 91.52 C468.14 89.14 468.73 87.19 469.18 85.83 C470.75 85.07 473.51 84.06 476.46 84.87 C480.02 85.86 481.92 88.97 483.1 90.89 C486.67 96.66 490.68 102.17 494.18 107.98 C500.9 119.14 507.21 115.25 519.18 127.92 Z" fill="#2e3192"/><path d="M469.35 85.99 C468.9 87.35 468.31 89.3 467.76 91.67 C467.76 91.67 465.23 102.66 466.5 115.4 C468.46 134.96 479.74 156.67 482.0 160.94 C487.62 171.55 496.56 185.99 510.48 201.11 C511.11 198.38 512.29 194.17 514.59 189.41 C518.1 182.13 521.16 179.86 525.03 173.59 C528.21 168.43 532.36 161.69 532.62 153.98 C533.0 142.49 524.57 133.58 519.33 128.05 C507.36 115.39 501.06 119.27 494.34 108.12 C490.84 102.31 486.84 96.81 483.27 91.04 C482.09 89.13 480.18 86.02 476.62 85.03 C473.68 84.22 470.92 85.23 469.35 85.99" fill="none" stroke="#a3a3a3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M757.51 116.84 C759.56 134.62 753.35 148.4 747.7 160.52 C739.04 179.12 723.14 201.28 714.47 198.5 C711.75 197.63 712.69 195.24 705.92 187.11 C700.24 180.28 697.22 179.14 693.9 173.5 C691.27 169.04 690.25 164.79 689.78 162.1 C690.19 145.29 694.89 135.29 699.28 129.18 C701.22 126.48 703.28 124.31 709.09 116.53 C714.16 109.73 715.8 107.08 720.17 101.02 C729.84 87.59 734.67 80.88 737.58 80.76 C746.04 80.42 755.54 99.66 757.51 116.84 Z" fill="#2e3192"/><path d="M705.99 187.19 C712.75 195.32 711.81 197.7 714.53 198.58 C723.19 201.36 739.09 179.2 747.75 160.62 C753.39 148.51 759.6 134.74 757.55 116.98 C755.58 99.81 746.08 80.58 737.63 80.92 C734.72 81.04 729.89 87.75 720.22 101.16 C715.86 107.22 714.22 109.87 709.15 116.66 C703.34 124.44 701.29 126.61 699.34 129.31 C694.95 135.41 690.26 145.4 689.85 162.21 C690.31 164.89 691.34 169.13 693.97 173.59 C697.28 179.22 700.3 180.37 705.99 187.19" fill="none" stroke="#a3a3a3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <svg class="layer patches" data-z="14" viewBox="302 0 620 620" aria-hidden="true"><path d="M704.76 308.34 C704.3 311.76 703.94 316.55 703.43 323.27 C703.23 326.0 702.53 335.76 702.26 353.35 C702.05 367.46 702.37 369.8 701.11 375.53 C699.97 380.66 698.49 387.05 693.78 393.48 C690.11 398.48 686.02 401.42 680.42 404.81 C679.12 405.59 677.74 406.4 676.26 407.27 C671.15 410.26 666.39 412.35 657.01 416.3 C656.33 416.59 655.67 416.86 655.05 417.12 C656.09 411.01 658.03 401.55 661.76 390.36 C668.06 371.47 671.96 369.95 673.96 357.8 C676.78 340.75 670.34 333.98 675.9 325.03 C679.04 319.96 684.74 321.72 697.53 313.47 C700.74 311.39 703.24 309.52 704.76 308.34 Z" fill="#2e3192"/><path d="M704.82 308.33 C704.36 311.74 704.0 316.54 703.49 323.25 C703.29 325.98 702.59 335.73 702.33 353.31 C702.12 367.4 702.44 369.74 701.17 375.47 C700.04 380.59 698.56 386.98 693.84 393.4 C690.18 398.41 686.09 401.34 680.49 404.73 C679.19 405.51 677.81 406.32 676.33 407.19 C671.23 410.18 666.47 412.26 657.1 416.21 C656.41 416.5 655.76 416.77 655.14 417.03 C656.18 410.93 658.11 401.47 661.84 390.29 C668.14 371.42 672.04 369.9 674.04 357.76 C676.86 340.72 670.42 333.95 675.97 325.01 C679.12 319.94 684.81 321.7 697.6 313.45 C700.81 311.38 703.3 309.51 704.82 308.33" fill="none" stroke="#a3a3a3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M680.42 404.81 L680.8 405.43 C679.42 412.55 676.55 422.85 669.87 433.42 C657.93 452.31 644.67 454.83 637.09 469.02 C632.43 477.75 629.33 491.98 637.64 515.72 C626.85 513.34 615.14 510.58 602.46 507.4 C599.21 492.39 597.43 480.0 596.38 471.15 C594.54 455.51 594.46 446.35 587.7 441.62 C597.47 443.96 604.59 442.93 609.16 441.63 C620.89 438.32 622.28 431.57 639.35 423.47 C643.88 421.31 643.24 422.05 655.05 417.12 C655.67 416.86 656.33 416.59 657.01 416.3 C666.39 412.35 671.15 410.26 676.26 407.27 C677.74 406.4 679.11 405.59 680.42 404.81 Z" fill="#2e3192"/><path d="M637.74 515.55 C629.42 491.83 632.52 477.61 637.18 468.89 C644.76 454.71 658.01 452.2 669.95 433.31 C676.63 422.75 679.5 412.46 680.87 405.35" fill="none" stroke="#a3a3a3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M704.82 308.33 C705.17 305.76 705.57 303.98 706.13 302.75 C709.77 294.82 715.59 290.93 718.59 279.81 C719.25 277.4 719.57 275.37 719.74 274.05" fill="none" stroke="#a3a3a3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <svg class="layer brow" data-z="40" viewBox="302 0 620 620" aria-hidden="true"><path d="M549.62 285.68 C556.01 280.87 565.65 274.24 578.26 267.84 C591.73 261.02 598.46 257.6 604.6 258.69 C620.26 261.45 622.24 282.33 637.81 285.01 C649.68 287.06 657.27 279.29 657.27 279.29 C658.6 278.33 661.9 275.7 664.61 276.76 C665.92 277.27 666.68 278.48 667.12 279.43" fill="none" stroke="#a3a3a3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M695.77 270.28 C699.76 268.8 705.25 266.19 710.75 261.57 C713.9 258.92 716.33 256.22 718.16 253.85" fill="none" stroke="#a3a3a3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <svg class="layer eye-left" data-z="44" viewBox="302 0 620 620" aria-hidden="true"><clipPath id="clip-left"><path d="M549.49 285.68 C549.02 286.62 547.3 289.78 543.47 291.46 C540.05 292.96 536.42 292.64 533.88 291.52 C533.01 291.02 530.23 289.34 528.28 286.01 C528.27 286.0 528.26 285.98 528.26 285.96 C526.66 282.86 526.02 278.89 526.77 274.72 C528.79 274.43 534.98 273.83 541.31 277.48 C545.93 280.16 548.41 283.82 549.49 285.68 Z"/></clipPath><path d="M549.49 285.68 C549.02 286.62 547.3 289.78 543.47 291.46 C540.05 292.96 536.42 292.64 533.88 291.52 C533.01 291.02 530.23 289.34 528.28 286.01 C528.27 286.0 528.26 285.98 528.26 285.96 C526.66 282.86 526.02 278.89 526.77 274.72 C528.79 274.43 534.98 273.83 541.31 277.48 C545.93 280.16 548.41 283.82 549.49 285.68 Z" fill="#2e3192"/><g clip-path="url(#clip-left)"><circle class="pupil" cx="537.5" cy="283.5" r="3.6" fill="#0b0b1e"/></g><path d="M526.91 274.73 C528.93 274.45 535.12 273.85 541.44 277.5 C546.06 280.17 548.55 283.83 549.62 285.68 C549.16 286.62 547.44 289.78 543.61 291.46 C540.18 292.96 536.56 292.64 534.02 291.52 C531.67 290.49 529.73 288.54 528.43 286.02 C528.41 286.0 528.41 285.99 528.4 285.97 C526.8 282.87 526.16 278.9 526.91 274.73" fill="none" stroke="#a3a3a3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <svg class="layer eye-right" data-z="44" viewBox="302 0 620 620" aria-hidden="true"><clipPath id="clip-right"><path d="M695.7 270.26 C695.84 271.45 696.55 278.66 691.37 284.23 C690.53 285.12 687.36 288.54 682.45 289.05 C676.54 289.67 670.41 285.82 667.04 279.42 C667.7 278.34 674.1 268.29 685.34 267.85 C689.93 267.67 693.59 269.16 695.7 270.26 Z"/></clipPath><path d="M695.7 270.26 C695.84 271.45 696.55 278.66 691.37 284.23 C690.53 285.12 687.36 288.54 682.45 289.05 C676.54 289.67 670.41 285.82 667.04 279.42 C667.7 278.34 674.1 268.29 685.34 267.85 C689.93 267.67 693.59 269.16 695.7 270.26 Z" fill="#2e3192"/><g clip-path="url(#clip-right)"><circle class="pupil" cx="682.0" cy="279.0" r="3.6" fill="#0b0b1e"/></g><path d="M667.12 279.43 C667.78 278.35 674.18 268.31 685.41 267.87 C690.0 267.69 693.66 269.18 695.77 270.28 C695.91 271.46 696.62 278.67 691.44 284.24 C690.6 285.13 687.43 288.54 682.52 289.06 C676.61 289.67 670.49 285.83 667.12 279.43" fill="none" stroke="#a3a3a3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <svg class="layer chin" data-z="56" viewBox="302 0 620 620" aria-hidden="true"><path d="M587.81 441.51 C597.58 443.85 604.69 442.82 609.26 441.52 C620.99 438.22 622.38 431.47 639.45 423.37 C643.97 421.22 643.33 421.96 655.14 417.03" fill="none" stroke="#a3a3a3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <svg class="layer snout" data-z="84" viewBox="302 0 620 620" aria-hidden="true"><path d="M563.61 369.53 C561.99 366.52 559.22 360.35 559.42 352.23 C559.47 350.13 559.59 345.19 561.83 339.96 C562.54 338.29 563.48 336.58 564.7 334.93 C566.88 331.98 568.23 331.55 572.17 327.82 C577.25 323.01 580.7 318.31 582.92 314.89 C582.98 307.0 583.05 299.1 583.1 291.21" fill="none" stroke="#a3a3a3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M561.83 339.96 C557.32 330.14 557.15 322.6 557.83 317.52 C559.01 308.77 563.05 304.84 563.36 295.72 C563.61 288.51 561.38 282.56 559.5 278.72" fill="none" stroke="#a3a3a3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M562.25 349.29 C563.98 352.62 566.79 356.77 570.64 357.06 C574.07 357.32 575.8 354.32 578.41 355.19 C581.24 356.15 580.55 360.15 584.31 366.07 C586.07 368.82 588.9 373.29 592.39 373.21 C595.68 373.14 598.15 369.05 601.09 364.2 C602.93 361.16 604.09 358.4 604.82 356.44 C609.5 358.67 612.83 358.43 614.76 357.99 C616.21 357.66 617.07 357.17 622.22 354.57 C624.94 353.2 627.12 352.11 628.43 351.47" fill="none" stroke="#a3a3a3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M560.38 405.82 C561.21 406.89 568.59 416.01 579.34 415.15 C584.16 414.75 591.2 412.23 593.01 407.07 C593.99 404.29 592.43 403.62 591.77 396.82 C590.97 388.57 592.93 386.06 590.84 381.91 C589.47 379.2 587.16 377.33 584.62 376.01" fill="none" stroke="#a3a3a3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M601.4 377.56 C599.33 379.11 597.26 380.67 595.19 382.22 C595.25 384.38 595.31 387.62 595.19 391.54 C594.87 401.3 593.79 404.15 595.38 407.83 C597.67 413.14 603.46 415.37 604.68 415.84 C614.52 419.65 628.84 412.63 640.19 398.38" fill="none" stroke="#a3a3a3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+</div>
+<script>
+/* The head turns toward the pointer: the whole head rotates, and each layer of the
+   drawing sits at its own depth, so the snout swings further than the ears – a turn
+   built from a single front view. The pupils get there first. Idle, it sways a little
+   and blinks now and then. */
+const head = document.querySelector('.head');
+const layers = [...document.querySelectorAll('.layer')];
+const ring = document.querySelector('.ring-turn');
+const eyes = [...document.querySelectorAll('.eye-left, .eye-right')];
+const pupils = [...document.querySelectorAll('.pupil')];
+const MAX_YAW = 26, MAX_PITCH = 14;             // degrees
+const PUPIL_RANGE = { x: 6.5, y: 3.0 };   // drawing units
+const PERSPECTIVE = 1100;
+const params = new URLSearchParams(location.search);
+const EMBEDDED = params.has('embed');
+// a still for the cover (?still): one fixed pose, no blinking
+const STILL = params.has('still');
+const STILL_POSE = { x: 0.32, y: -0.12 }, STILL_RING = -14;
+// with "reduce motion" on: it still looks where you point, but doesn't sway, blink or turn the ring
+const calm = matchMedia('(prefers-reduced-motion: reduce)');
+
+let target = { x: 0, y: 0 }, now = { x: 0, y: 0 }, gaze = { x: 0, y: 0 };
+let lastMove = -1e9, hold = 2500;               // how long it keeps looking after the last move
+
+function aim(clientX, clientY, w = innerWidth, h = innerHeight, touch = false) {
+    target.x = Math.max(-1, Math.min(1, (clientX - w / 2) / (w / 2)));
+    target.y = Math.max(-1, Math.min(1, (clientY - h / 2) / (h / 2)));
+    lastMove = performance.now();
+    // a tap is a single glance: keep looking there a while longer than after a mouse move
+    hold = touch ? 5000 : 2500;
+}
+const touchy = (e) => e.pointerType === 'touch' || e.pointerType === 'pen';
+addEventListener('pointermove', (e) => aim(e.clientX, e.clientY, innerWidth, innerHeight, touchy(e)));
+addEventListener('pointerdown', (e) => aim(e.clientX, e.clientY, innerWidth, innerHeight, touchy(e)));
+// embedded: the project page passes on the pointer (moves and taps) from anywhere on the page
+addEventListener('message', (e) => {
+    if (e.origin === location.origin && e.data?.livePointer) {
+        const p = e.data.livePointer;
+        aim(p.x, p.y, p.w, p.h, p.touch);
+    }
+});
+
+// blink: the eyes squash shut and open again
+function blink() {
+    if (running && !calm.matches) {
+        for (const eye of eyes) {
+            eye.animate([{ transform: 'scaleY(1)' }, { transform: 'scaleY(0.08)' }, { transform: 'scaleY(1)' }],
+                { duration: 180, easing: 'ease-in-out', composite: 'add' });
+        }
+    }
+    setTimeout(blink, 2500 + Math.random() * 4000);
+}
+if (!STILL) setTimeout(blink, 1800);
+
+function frame(t) {
+    if (!running) { ticking = false; return; }
+    const idle = t - lastMove > hold;
+    const sway = calm.matches ? { x: 0, y: 0 } : { x: Math.sin(t / 2600) * 0.35, y: Math.sin(t / 3700) * 0.15 };
+    const goal = STILL ? STILL_POSE : idle ? sway : target;
+    const ease = STILL ? 1 : idle ? 0.03 : 0.09;
+    now.x += (goal.x - now.x) * ease;
+    now.y += (goal.y - now.y) * ease;
+    // the eyes lead: they reach the goal well before the head does
+    const lead = STILL ? 1 : idle ? 0.08 : 0.3;
+    gaze.x += (goal.x - gaze.x) * lead;
+    gaze.y += (goal.y - gaze.y) * lead;
+    for (const pupil of pupils) {
+        pupil.setAttribute('transform', `translate(${gaze.x * PUPIL_RANGE.x} ${gaze.y * PUPIL_RANGE.y})`);
+    }
+
+    const size = head.clientWidth, unit = size / 620;
+    head.style.transform = `rotateX(${-now.y * MAX_PITCH}deg) rotateY(${now.x * MAX_YAW}deg)`;
+    for (const layer of layers) {
+        const z = +layer.dataset.z * unit * 0.8;
+        // pushed forward, a layer also grows: scale it back so the drawing keeps its size at rest
+        layer.style.transform = `translateZ(${z}px) scale(${(PERSPECTIVE - z) / PERSPECTIVE})`;
+    }
+    const turn = STILL ? STILL_RING : calm.matches ? 0 : t / 400 % 360;
+    ring.setAttribute('transform', `rotate(${turn} 612 300)`);
+    requestAnimationFrame(frame);
+}
+
+// only animate while it can be seen: the tab is visible and the frame is on screen
+let running = false, ticking = false, onScreen = true;
+function update() {
+    running = !document.hidden && onScreen;
+    if (running && !ticking) { ticking = true; requestAnimationFrame(frame); }
+}
+document.addEventListener('visibilitychange', update);
+new IntersectionObserver(([entry]) => { onScreen = entry.isIntersecting; update(); })
+    .observe(document.querySelector('.stage'));
+update();
+
+// embedded: the page around it handles the arrow keys and Esc
+if (EMBEDDED && window.parent !== window) {
+    addEventListener('keydown', (e) => {
+        if (['ArrowLeft', 'ArrowRight', 'Escape'].includes(e.key)) {
+            e.preventDefault();
+            window.parent.postMessage({ specimenKey: e.key }, location.origin);
+        }
+    });
+}
+</script>
+</body>
+</html>
