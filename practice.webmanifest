@@ -1,0 +1,15 @@
+{
+  "name": "Pitching",
+  "short_name": "Pitching",
+  "description": "Sing a note and see how close you are.",
+  "start_url": "/practice",
+  "scope": "/practice",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f2efe9",
+  "theme_color": "#f2efe9",
+  "icons": [
+    { "src": "/practice-icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/practice-icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

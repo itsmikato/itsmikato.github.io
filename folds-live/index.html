@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Folds – live · Mikato</title>
+  <style>
+    @font-face { font-family: Display; src: url("inter-display-latin-variable.woff2") format("woff2"); font-weight: 100 900; }
+    @font-face { font-family: Serif; src: url("eb-garamond-italic-latin.woff2") format("woff2"); font-style: italic; }
+    @font-face { font-family: Mono; src: url("dm-mono-latin.woff2") format("woff2"); }
+
+    :root { --bg: #f2efe9; --ink: #141414; --muted: rgba(20, 20, 20, 0.45); }
+    html, body { margin: 0; background: var(--bg); color: var(--ink); }
+    .embed { overflow: hidden; }                            /* embedded, the page sizes its frame to the piece */
+    html { touch-action: pan-y; }
+    button { all: unset; cursor: pointer; }
+
+    /* the plane, and beside it the variables, then the result and the line over time – on
+       phones all of it under the plane, in that order */
+    .stage {
+      box-sizing: border-box; min-height: 100vh;
+      display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start;
+      gap: clamp(28px, 5vw, 64px); padding: clamp(18px, 4vw, 44px);
+    }
+    .embed .stage { min-height: 0; }
+    .planes { display: flex; gap: 14px; }
+    .plane { position: relative; }
+    .plane canvas { display: block; cursor: crosshair; }
+    .plane .caption, .epoch { position: absolute; top: 100%; margin-top: 8px; font: 10px Mono, monospace; color: var(--muted); letter-spacing: 0.04em; }
+    .plane .caption { left: 0; }
+    .epoch { right: 0; }
+
+    /* which neurons are on in the piece under the pointer: a little row of dots beside it */
+    .tip { position: absolute; display: none; gap: 7px; padding: 6px 9px; background: var(--bg); border-radius: 999px; pointer-events: none; transform: translate(14px, -50%); white-space: nowrap; }
+    .tip .layer { display: inline-flex; gap: 3px; }
+    .tip i { width: 7px; height: 7px; border-radius: 50%; border: 1px solid var(--ink); box-sizing: border-box; }
+    .tip i.on { background: var(--ink); }
+    .tip.rows { flex-direction: column; align-items: flex-start; gap: 4px; border-radius: 10px; }
+    .tip.rows i { width: 6px; height: 6px; }
+
+    .side { display: flex; flex-direction: column; gap: clamp(18px, 3.2vh, 32px); max-width: 26em; min-width: 0; }
+    .block { display: flex; flex-direction: column; gap: 10px; }
+    /* a small heading over each part: what it is, and what you can do there */
+    .label { margin: 0; font: 10px Mono, monospace; color: var(--muted); letter-spacing: 0.06em; text-transform: lowercase; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; }
+    .label b { font-weight: 400; color: var(--ink); }
+
+    /* the variables: one row each, every option a button; the chosen one filled with its colour */
+    .panel { padding: 16px 18px 14px; border-radius: 12px; background: rgba(20, 20, 20, 0.035); gap: 12px; }
+    .vars { display: flex; flex-direction: column; gap: 4px; margin: 0; }
+    .vars dt { font: 10px Mono, monospace; color: var(--muted); letter-spacing: 0.06em; text-transform: lowercase; }
+    .vars dt:not(:first-child) { margin-top: 6px; }
+    .vars dd { margin: 0; display: flex; flex-wrap: wrap; gap: 5px; }
+    .opt { padding: 5px 10px; border: 1px solid rgba(20, 20, 20, 0.18); border-radius: 7px; font: 11px Mono, monospace; letter-spacing: 0.02em; color: var(--ink); transition: border-color 0.15s, background 0.15s; }
+    .opt:hover { border-color: var(--ink); }
+    .opt[aria-pressed="true"] { background: var(--u); border-color: var(--u); }
+    .opt:focus-visible, .act:focus-visible { outline: 1px solid var(--ink); outline-offset: 2px; }
+
+
+    .count { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+    .count .n { font: 300 clamp(56px, 8vw, 112px)/0.8 Display, sans-serif; letter-spacing: -0.055em; font-variant-numeric: tabular-nums; }
+    .count .small { font: italic 20px/1.2 Serif, Georgia, serif; }
+    .count .small span { display: block; color: var(--muted); }
+
+    .finding { margin: 0; font: 400 15px/1.5 Display, sans-serif; letter-spacing: -0.005em; max-width: 30em; min-height: 3em; }
+
+    .trace svg { display: block; width: 100%; height: 46px; overflow: visible; margin-bottom: 6px; }
+    .line { position: relative; }
+    .trace svg.scrub { cursor: ew-resize; touch-action: none; }
+    .trace svg:focus-visible { outline: 1px solid var(--ink); outline-offset: 6px; }
+    .knob { position: absolute; top: 39.5px; width: 13px; height: 13px; margin-left: -6.5px; border-radius: 50%; background: var(--ink); pointer-events: none; }
+    .knob[hidden] { display: none; }
+    .key i { display: inline-block; width: 14px; height: 0; border-top: 1px solid var(--ink); vertical-align: 0.3em; margin-right: 5px; }
+    .key i.pieces { border-top: 2px solid #9a87f0; }
+    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; font: 10px Mono, monospace; letter-spacing: 0.04em; color: var(--muted); }
+    .act { padding: 5px 11px; border: 1px solid var(--ink); border-radius: 7px; color: var(--ink); transition: background 0.2s, color 0.2s; }
+    .act:hover { background: var(--ink); color: var(--bg); }
+    .act:empty { display: none; }
+    .still .actions, .still .hint, .still #look { visibility: hidden; }
+    /* the cover: only the plane, edge to edge */
+    .still .stage { grid-template-columns: 1fr; padding: 0; }
+    .still .side, .still .panel, .still .result, .still .trace, .still .epoch { display: none; }
+
+    /* wide but low (the project page's frame on a laptop): the variables and the result side by
+       side beside the plane, the line over time under both */
+    /* wide screens: three columns – the plane, the variables, and the result with its line */
+    @media (min-width: 1100px) {
+      /* both columns as tall as the plane: the variables spread over it, the line at its foot */
+      body:not(.compare) .stage { align-items: stretch; }
+      body:not(.compare) .side { display: grid; max-width: none; grid-template-columns: minmax(250px, 0.85fr) minmax(280px, 1fr); grid-template-rows: auto 1fr; grid-template-areas: "panel result" "panel trace"; gap: 26px clamp(28px, 3.5vw, 56px); }
+      body:not(.compare) .panel { grid-area: panel; }
+      body:not(.compare) .vars { flex: 1; justify-content: space-evenly; }
+      body:not(.compare) .actions { margin-top: auto; }
+      body:not(.compare) .result { grid-area: result; }
+      body:not(.compare) .trace { grid-area: trace; align-self: end; }
+    }
+    @media (max-width: 760px) {
+      .stage { grid-template-columns: minmax(0, 1fr); gap: 34px; padding: 14px; }
+      .side { gap: 22px; max-width: none; }
+      /* the variables: label beside its options, to keep the panel short */
+      .panel { padding: 12px 12px 10px; gap: 9px; border-radius: 10px; }
+      .vars { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 6px 8px; align-items: center; }
+      .vars dt:not(:first-child) { margin-top: 0; }
+      .opt { padding: 4px 8px; }
+      .count .n { font-size: 56px; }
+    }
+  </style>
+</head>
+<body>
+<div class="stage">
+  <div class="planes" id="planes"></div>
+  <div class="side">
+    <section class="block panel" aria-label="variables">
+      <p class="label"><b>variables</b><span class="hint">choose one, and it trains again</span></p>
+      <dl class="vars" id="vars"></dl>
+      <div class="actions"><button class="act" id="again">train again, new start</button><button class="act" id="play">pause</button></div>
+    </section>
+    <section class="block result">
+      <p class="label"><b id="result-label">result</b></p>
+      <div class="count" id="count"></div>
+      <p class="finding" id="finding"></p>
+    </section>
+    <section class="block trace">
+      <p class="label"><b>while it learned</b><span class="key"><i></i>right answers</span><span class="key"><i class="pieces"></i>pieces</span></p>
+      <div class="line">
+        <svg id="trace" viewBox="0 0 400 46" preserveAspectRatio="none" tabindex="0" role="slider" aria-label="epoch: right answers and number of pieces over training" aria-valuemin="1" aria-valuemax="4000" aria-valuenow="4000"></svg>
+        <span id="knob" class="knob" hidden></span>
+      </div>
+      <p class="label" id="look"></p>
+    </section>
+  </div>
+</div>
+<script>
+/*
+ * Folds – the bachelor thesis "Geometric Differences in Activation Regions of MLPs under
+ * Different Loss Functions" (Uni Münster, 2026), live. A small ReLU network learns to separate
+ * two classes in the plane; every neuron folds the plane along a line, and the flat pieces
+ * between the folds are its activation regions.
+ *
+ * Ported from the thesis code (code/experiment): the datasets (moons, circles, spiral, 800
+ * points, noise 0.10, 80 % for training), the models (hidden layers of 5, an embedding, then
+ * a linear softmax head for cross-entropy and MSE, or two class prototypes and HarMax with
+ * q = 2 for harmonic loss), and the training protocol (full-batch AdamW, lr 1e-3, weight decay
+ * 1e-3, cosine schedule over 4000 epochs, Kaiming init for hidden layers, Xavier for the rest,
+ * prototypes N(0, 0.5)). Regions, their count and the Gini coefficient of their areas come from
+ * a grid over [-2.5, 2.5]², as in the thesis.
+ *
+ * Updated from the thesis (docs/thesis-piece/harmonic-experiments.md): the embedding has 5
+ * dimensions instead of 2. With two classes every head still decides by one hyperplane in the
+ * last hidden layer, so cross-entropy and MSE don't change, but a 2-d embedding squeezed the
+ * distances harmonic loss learns from. Also beyond the thesis: a fourth hidden layer, and the
+ * final count on a 1600² grid (the thesis used 800²).
+ */
+
+// ---------------------------------------------------------------- setup
+const params = new URLSearchParams(location.search);
+const EMBEDDED = params.has('embed');
+const STILL = params.has('still');            // one finished run, for the cover image
+if (EMBEDDED) document.body.classList.add('embed');
+if (STILL) document.body.classList.add('still');
+
+const EPOCHS = 4000;
+const EMBED = 5;                               // embedding size (the thesis used 2)
+const CHECKPOINTS = [25, 50, 100, 250, 500, 1000, 2000, 3000, 4000];
+const BOX = 2.5;                               // the plane is [-BOX, BOX]²
+const DURATION = 14;                           // seconds for 4000 epochs, paced on a log scale
+// the final count uses 1600², twice the thesis's 800² per axis: it finds tiny pieces 800² misses
+const GRID_LIVE = 240, GRID_COMPARE = 170, GRID_THESIS = 800, GRID_FINAL = 1600;
+const PASTELS = ['#7fd8cc', '#ff9a87', '#f0d890', '#9a87f0', '#7fe6e0', '#a8f0c0', '#a8a8e6'];
+const PAPER = [242, 239, 233];
+const LOSSES = { cross_entropy: 'cross-entropy', mse: 'mean squared', harmonic: 'harmonic' };
+const DATASETS = ['moons', 'circles', 'spiral'];
+
+// seeded random numbers, so a seed always gives the same run
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function gauss(r) {
+  let u = 0;
+  while (u === 0) u = r();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r());
+}
+
+// ---------------------------------------------------------------- data (code/experiment/data.py)
+function makeDataset(name, n = 800, noise = 0.10, seed = 0) {
+  const r = mulberry32(1000 + seed + name.length * 7919);
+  const X = [], y = [];
+  const n0 = Math.floor(n / 2), n1 = n - n0;
+  const push = (a, b, c) => { X.push([a + noise * gauss(r), b + noise * gauss(r)]); y.push(c); };
+  if (name === 'moons') {                     // as scikit-learn's make_moons
+    for (let i = 0; i < n0; i++) { const t = Math.PI * i / (n0 - 1); push(Math.cos(t), Math.sin(t), 0); }
+    for (let i = 0; i < n1; i++) { const t = Math.PI * i / (n1 - 1); push(1 - Math.cos(t), 1 - Math.sin(t) - 0.5, 1); }
+  } else if (name === 'circles') {            // make_circles, factor 0.5: outer ring 0, inner ring 1
+    for (let i = 0; i < n0; i++) { const t = 2 * Math.PI * i / n0; push(Math.cos(t), Math.sin(t), 0); }
+    for (let i = 0; i < n1; i++) { const t = 2 * Math.PI * i / n1; push(0.5 * Math.cos(t), 0.5 * Math.sin(t), 1); }
+  } else {                                    // the two-spirals task, 1.75 turns
+    for (let c = 0; c < 2; c++) {
+      const m = c ? n1 : n0;
+      for (let i = 0; i < m; i++) {
+        const t = i / (m - 1), th = 1.75 * 2 * Math.PI * t + c * Math.PI, rad = 0.15 + 1.25 * t;
+        push(rad * Math.cos(th), rad * Math.sin(th), c);
+      }
+    }
+  }
+  // shuffle, then 80 % train / 20 % test
+  for (let i = X.length - 1; i > 0; i--) {
+    const j = Math.floor(r() * (i + 1));
+    [X[i], X[j]] = [X[j], X[i]];
+    [y[i], y[j]] = [y[j], y[i]];
+  }
+  const nTrain = Math.floor(0.8 * n);
+  return { Xtr: X.slice(0, nTrain), ytr: y.slice(0, nTrain), Xte: X.slice(nTrain), yte: y.slice(nTrain), all: X, yall: y };
+}
+
+// ---------------------------------------------------------------- model (code/experiment/models.py)
+// width: neurons per hidden layer. The embedding is EMBED wide for width 5 (as tested against the
+// thesis) and as wide as the layer otherwise: harmonic loss needs it no narrower than the last layer.
+const embedFor = (width) => (width === 5 ? EMBED : width);
+function makeModel(loss, depth, seed, width = 5) {
+  const r = mulberry32(seed * 2654435761);
+  const dims = [2, ...Array(depth).fill(width)];
+  const tensors = [];
+  const tensor = (n, std) => {
+    const t = { p: new Float64Array(n), g: new Float64Array(n), m: new Float64Array(n), v: new Float64Array(n) };
+    if (std) for (let i = 0; i < n; i++) t.p[i] = std * gauss(r);
+    tensors.push(t);
+    return t;
+  };
+  const hidden = [];
+  for (let l = 0; l < depth; l++) {
+    const fin = dims[l], fout = dims[l + 1];
+    hidden.push({ fin, fout, W: tensor(fout * fin, Math.sqrt(2 / fin)), b: tensor(fout, 0) });   // Kaiming
+  }
+  const E = embedFor(width);
+  const embed = { fin: width, fout: E, W: tensor(width * E, Math.sqrt(2 / (width + E))), b: tensor(E, 0) };   // Xavier
+  const head = loss === 'harmonic'
+    ? { mu: tensor(2 * E, 0.5) }                                                                   // prototypes
+    : { W: tensor(2 * E, Math.sqrt(2 / (E + 2))), b: tensor(2, 0) };                               // Xavier
+  return { loss, depth, width, E, hidden, embed, head, tensors, epoch: 0, K: width * depth };
+}
+
+// forward pass for one point; fills scratch buffers and returns the margin (> 0: class 1)
+function makeScratch(model) {
+  return {
+    z: model.hidden.map((L) => new Float64Array(L.fout)),
+    h: model.hidden.map((L) => new Float64Array(L.fout)),
+    e: new Float64Array(model.E), de: new Float64Array(model.E), o: new Float64Array(2), p: new Float64Array(2), s: new Float64Array(2),
+    dh: new Float64Array(model.width), dz: new Float64Array(model.width),
+  };
+}
+function forward(model, x0, x1, S) {
+  let inp = null;
+  for (let l = 0; l < model.hidden.length; l++) {
+    const L = model.hidden[l], W = L.W.p, b = L.b.p, z = S.z[l], h = S.h[l];
+    for (let j = 0; j < L.fout; j++) {
+      let a = b[j];
+      if (l === 0) a += W[j * 2] * x0 + W[j * 2 + 1] * x1;
+      else for (let i = 0; i < L.fin; i++) a += W[j * L.fin + i] * inp[i];
+      z[j] = a;
+      h[j] = a > 0 ? a : 0;
+    }
+    inp = h;
+  }
+  const Em = model.embed, e = S.e, D = model.E, w = model.width;
+  for (let j = 0; j < D; j++) {
+    let a = Em.b.p[j];
+    for (let i = 0; i < w; i++) a += Em.W.p[j * w + i] * inp[i];
+    e[j] = a;
+  }
+  if (model.loss === 'harmonic') {
+    const mu = model.head.mu.p;
+    for (let c = 0; c < 2; c++) {
+      let s2 = 0;
+      for (let k = 0; k < D; k++) { const d = e[k] - mu[c * D + k]; s2 += d * d; }
+      S.s[c] = Math.max(s2, 1e-24);                          // squared distance, r clamped at 1e-12
+    }
+    const w0 = 1 / S.s[0], w1 = 1 / S.s[1];                  // HarMax, q = 2
+    S.p[0] = w0 / (w0 + w1); S.p[1] = w1 / (w0 + w1);
+    return S.s[0] - S.s[1];                                  // the thesis's harmonic margin
+  }
+  const Wc = model.head.W.p, bc = model.head.b.p, o = S.o;
+  o[0] = bc[0]; o[1] = bc[1];
+  for (let k = 0; k < D; k++) { o[0] += Wc[k] * e[k]; o[1] += Wc[D + k] * e[k]; }
+  const mx = Math.max(o[0], o[1]), q0 = Math.exp(o[0] - mx), q1 = Math.exp(o[1] - mx);
+  S.p[0] = q0 / (q0 + q1); S.p[1] = q1 / (q0 + q1);
+  return o[1] - o[0];
+}
+
+// one full-batch AdamW step (torch's AdamW with a cosine-annealed learning rate)
+function trainEpoch(model, X, y, S) {
+  for (const t of model.tensors) t.g.fill(0);
+  const N = X.length, invN = 1 / N, harmonic = model.loss === 'harmonic', mse = model.loss === 'mse';
+  const D = model.E, w = model.width, de = S.de;
+  for (let n = 0; n < N; n++) {
+    forward(model, X[n][0], X[n][1], S);
+    const c = y[n], e = S.e, p = S.p;
+    de.fill(0);
+    if (harmonic) {
+      const mu = model.head.mu;
+      for (let k = 0; k < 2; k++) {
+        const dLds = ((k === c ? 1 / S.s[c] : 0) - p[k] / S.s[k]) * invN;
+        for (let j = 0; j < D; j++) {
+          const d = e[j] - mu.p[k * D + j];
+          de[j] += dLds * 2 * d;
+          mu.g[k * D + j] -= dLds * 2 * d;
+        }
+      }
+    } else {
+      let do0, do1;
+      if (mse) {          // mean over both outputs of (softmax - one-hot)²
+        const dp0 = (p[0] - (c === 0 ? 1 : 0)) * invN, dp1 = (p[1] - (c === 1 ? 1 : 0)) * invN;
+        const dot = p[0] * dp0 + p[1] * dp1;
+        do0 = p[0] * (dp0 - dot); do1 = p[1] * (dp1 - dot);
+      } else {
+        do0 = (p[0] - (c === 0 ? 1 : 0)) * invN; do1 = (p[1] - (c === 1 ? 1 : 0)) * invN;
+      }
+      const W = model.head.W, b = model.head.b;
+      for (let j = 0; j < D; j++) {
+        W.g[j] += do0 * e[j]; W.g[D + j] += do1 * e[j];
+        de[j] = W.p[j] * do0 + W.p[D + j] * do1;
+      }
+      b.g[0] += do0; b.g[1] += do1;
+    }
+    // embedding layer, then back through the hidden layers
+    const Em = model.embed, last = S.h[model.hidden.length - 1], dh = S.dh, dz = S.dz;
+    for (let i = 0; i < w; i++) {
+      let a = 0;
+      for (let j = 0; j < D; j++) { Em.W.g[j * w + i] += de[j] * last[i]; a += Em.W.p[j * w + i] * de[j]; }
+      dh[i] = a;
+    }
+    for (let j = 0; j < D; j++) Em.b.g[j] += de[j];
+    for (let l = model.hidden.length - 1; l >= 0; l--) {
+      const L = model.hidden[l], z = S.z[l];
+      const inp = l === 0 ? X[n] : S.h[l - 1];
+      for (let j = 0; j < w; j++) dz[j] = z[j] > 0 ? dh[j] : 0;
+      for (let j = 0; j < w; j++) {
+        L.b.g[j] += dz[j];
+        for (let i = 0; i < L.fin; i++) L.W.g[j * L.fin + i] += dz[j] * inp[i];
+      }
+      if (l > 0) for (let i = 0; i < w; i++) {
+        let a = 0;
+        for (let j = 0; j < w; j++) a += L.W.p[j * w + i] * dz[j];
+        dh[i] = a;
+      }
+    }
+  }
+  const t = model.epoch + 1, lr = 0.5 * 1e-3 * (1 + Math.cos(Math.PI * model.epoch / EPOCHS));
+  const b1 = 0.9, b2 = 0.999, bc1 = 1 - b1 ** t, bc2 = 1 - b2 ** t;
+  for (const T of model.tensors) {
+    const P = T.p, G = T.g, M = T.m, V = T.v;
+    for (let i = 0; i < P.length; i++) {
+      P[i] -= lr * 1e-3 * P[i];                              // decoupled weight decay
+      M[i] = b1 * M[i] + (1 - b1) * G[i];
+      V[i] = b2 * V[i] + (1 - b2) * G[i] * G[i];
+      P[i] -= lr * (M[i] / bc1) / (Math.sqrt(V[i] / bc2) + 1e-8);
+    }
+  }
+  model.epoch = t;
+}
+
+function accuracy(model, X, y, S) {
+  let ok = 0;
+  for (let n = 0; n < X.length; n++) if ((forward(model, X[n][0], X[n][1], S) > 0 ? 1 : 0) === y[n]) ok++;
+  return ok / X.length;
+}
+const snapshot = (model) => model.tensors.map((t) => Float64Array.from(t.p));
+// the run's history, for scrubbing back: weights at epochs about 2 % apart (some 400 per run)
+function keep(m) {
+  const h = m.hist, e = m.model.epoch, last = h.length ? h[h.length - 1].epoch : 0;
+  if (e > last && (e >= last * 1.02 || e === EPOCHS)) h.push({ epoch: e, snap: m.model.tensors.map((t) => Float32Array.from(t.p)) });
+}
+function restore(model, snap) { model.tensors.forEach((t, i) => t.p.set(snap[i])); }
+
+// ---------------------------------------------------------------- the grid: regions, folds, boundary
+// withFolds: also keep every neuron's preactivation, for drawing the folds (not needed to count)
+function evalGrid(model, G, S, withFolds = true) {
+  const n = G * G, K = model.K;
+  let pattern, margin, pre = null;
+  if (withFolds) {                                           // for drawing: reuse this model's buffers
+    if (!S.pool || S.pool.n !== n) S.pool = { n, pattern: new Int32Array(n), margin: new Float32Array(n), pre: new Float32Array(K * n) };
+    ({ pattern, margin, pre } = S.pool);
+  } else {
+    pattern = new Int32Array(n); margin = new Float32Array(n);
+  }
+  for (let j = 0; j < G; j++) {
+    const x1 = -BOX + (2 * BOX * j) / (G - 1);
+    for (let i = 0; i < G; i++) {
+      const x0 = -BOX + (2 * BOX * i) / (G - 1), idx = j * G + i;
+      margin[idx] = forward(model, x0, x1, S);
+      // a piece's id: its on/off pattern as bits, or, past 30 neurons, a 32-bit hash of it
+      let bits = 0, k = 0, h = 0x811c9dc5;
+      for (let l = 0; l < model.hidden.length; l++) {
+        let layer = 0;
+        for (let u = 0; u < model.width; u++, k++) {
+          const z = S.z[l][u];
+          if (pre) pre[k * n + idx] = z;
+          if (z > 0) { layer |= 1 << u; if (k < 31) bits |= 1 << k; }
+        }
+        h = Math.imul(h ^ layer, 0x01000193) >>> 0;
+        h = Math.imul(h ^ (h >>> 15), 0x2c1b3c6d) >>> 0;
+      }
+      pattern[idx] = model.K <= 30 ? bits : h | 0;
+    }
+  }
+  return { G, pattern, margin, pre };
+}
+
+// count regions (distinct patterns), the Gini coefficient of their areas, and how many touch
+// the decision boundary (the margin changes sign inside them)
+function regionStats(grid, K) {
+  const { pattern, margin } = grid, areas = [];
+  let boundary = 0;
+  if (K <= 20) {                                             // ids are small: count in an array
+    const size = 1 << K, count = new Uint32Array(size), sign = new Uint8Array(size);
+    for (let i = 0; i < pattern.length; i++) { const p = pattern[i]; count[p]++; sign[p] |= margin[i] > 0 ? 1 : 2; }
+    for (let p = 0; p < size; p++) if (count[p]) { areas.push(count[p]); if (sign[p] === 3) boundary++; }
+  } else {                                                   // large or hashed ids: count in a map
+    const count = new Map(), sign = new Map();
+    for (let i = 0; i < pattern.length; i++) {
+      const p = pattern[i];
+      count.set(p, (count.get(p) || 0) + 1);
+      sign.set(p, (sign.get(p) || 0) | (margin[i] > 0 ? 1 : 2));
+    }
+    for (const [p, c] of count) { areas.push(c); if (sign.get(p) === 3) boundary++; }
+  }
+  areas.sort((a, b) => a - b);
+  const N = areas.length, total = pattern.length;
+  let s = 0;
+  areas.forEach((a, i) => { s += (i + 1) * a; });
+  const gini = N > 1 ? (2 * s) / (N * total) - (N + 1) / N : 0;
+  return { regions: N, gini, boundary };
+}
+
+// marching squares: the zero line of one field on the grid, as canvas segments
+function zeroLine(path, f, off, G, scale) {
+  const px = (i) => (i / (G - 1)) * scale, py = (j) => (1 - j / (G - 1)) * scale;
+  const at = (a, b) => a / (a - b);
+  for (let j = 0; j < G - 1; j++) for (let i = 0; i < G - 1; i++) {
+    const k = off + j * G + i;
+    const a = f[k], b = f[k + 1], c = f[k + G + 1], d = f[k + G];       // bl, br, tr, tl
+    const code = (a > 0) | ((b > 0) << 1) | ((c > 0) << 2) | ((d > 0) << 3);
+    if (code === 0 || code === 15) continue;
+    const E = [
+      () => [px(i + at(a, b)), py(j)],          // bottom
+      () => [px(i + 1), py(j + at(b, c))],      // right
+      () => [px(i + at(d, c)), py(j + 1)],      // top
+      () => [px(i), py(j + at(a, d))],          // left
+    ];
+    const seg = (e1, e2) => { const p = E[e1](), q = E[e2](); path.moveTo(p[0], p[1]); path.lineTo(q[0], q[1]); };
+    switch (code) {
+      case 1: case 14: seg(3, 0); break;
+      case 2: case 13: seg(0, 1); break;
+      case 3: case 12: seg(3, 1); break;
+      case 4: case 11: seg(1, 2); break;
+      case 6: case 9: seg(0, 2); break;
+      case 7: case 8: seg(3, 2); break;
+      case 5: case 10: {
+        const centre = (a + b + c + d) / 4 > 0;
+        if ((code === 5) === centre) { seg(3, 2); seg(0, 1); } else { seg(3, 0); seg(1, 2); }
+        break;
+      }
+    }
+  }
+}
+
+// a flat pastel per activation pattern, stable while the pattern lives
+function patternColour(p) {
+  const h = Math.imul(p + 1, 2654435761) >>> 0;
+  const hex = PASTELS[h % 7], mix = [0.34, 0.5, 0.68][(h >>> 8) % 3];
+  const c = [1, 3, 5].map((o) => parseInt(hex.slice(o, o + 2), 16));
+  return c.map((v, i) => Math.round(PAPER[i] + (v - PAPER[i]) * mix));
+}
+
+// ---------------------------------------------------------------- one plane = one model drawn
+class Plane {
+  constructor(host, caption) {
+    this.el = document.createElement('div');
+    this.el.className = 'plane';
+    this.canvas = document.createElement('canvas');
+    this.el.appendChild(this.canvas);
+    if (caption) { const c = document.createElement('span'); c.className = 'caption'; c.textContent = caption; this.el.appendChild(c); }
+    this.epoch = document.createElement('span');
+    this.epoch.className = 'epoch';
+    this.el.appendChild(this.epoch);
+    this.tip = document.createElement('div');
+    this.tip.className = 'tip';
+    this.el.appendChild(this.tip);
+    host.appendChild(this.el);
+    this.ctx = this.canvas.getContext('2d');
+    this.fill = document.createElement('canvas');
+    this.hover = null;
+  }
+  resize(size) {
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    this.size = size;
+    this.canvas.width = Math.round(size * dpr);
+    this.canvas.height = Math.round(size * dpr);
+    this.canvas.style.width = this.canvas.style.height = size + 'px';
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  draw(grid, K, data) {
+    const { G, pattern, margin, pre } = grid, n = G * G, ctx = this.ctx, S = this.size;
+    // fields
+    if (this.fill.width !== G) { this.fill.width = G; this.fill.height = G; }
+    const fctx = this.fill.getContext('2d'), img = fctx.createImageData(G, G), cache = new Map();
+    for (let j = 0; j < G; j++) for (let i = 0; i < G; i++) {
+      const p = pattern[j * G + i];
+      let c = cache.get(p);
+      if (!c) { c = patternColour(p); cache.set(p, c); }
+      const dim = this.hover !== null && p !== this.hover;
+      const o = ((G - 1 - j) * G + i) * 4;
+      img.data[o] = dim ? (c[0] + 2 * PAPER[0]) / 3 : c[0];
+      img.data[o + 1] = dim ? (c[1] + 2 * PAPER[1]) / 3 : c[1];
+      img.data[o + 2] = dim ? (c[2] + 2 * PAPER[2]) / 3 : c[2];
+      img.data[o + 3] = 255;
+    }
+    fctx.putImageData(img, 0, 0);
+    ctx.clearRect(0, 0, S, S);
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(this.fill, 0, 0, S, S);
+    // the folds: where each neuron switches on or off
+    const folds = new Path2D();
+    for (let k = 0; k < K; k++) zeroLine(folds, pre, k * n, G, S);
+    ctx.strokeStyle = K > 20 ? 'rgba(20,20,20,0.3)' : 'rgba(20,20,20,0.5)';   // wide networks have many folds
+    ctx.lineWidth = K > 20 ? 0.6 : 0.8;
+    ctx.stroke(folds);
+    // the decision boundary
+    const boundary = new Path2D();
+    zeroLine(boundary, margin, 0, G, S);
+    ctx.strokeStyle = '#141414';
+    ctx.lineWidth = 2.4;
+    ctx.lineCap = 'round';
+    ctx.stroke(boundary);
+    // the data: one class filled, the other a ring
+    const toX = (v) => ((v + BOX) / (2 * BOX)) * S, toY = (v) => (1 - (v + BOX) / (2 * BOX)) * S;
+    const r = S < 300 ? 1.4 : 2.1;
+    ctx.fillStyle = 'rgba(20,20,20,0.8)';
+    ctx.strokeStyle = 'rgba(20,20,20,0.8)';
+    ctx.lineWidth = 0.9;
+    const dots = new Path2D(), rings = new Path2D();
+    data.Xtr.forEach((x, i) => {
+      const X = toX(x[0]), Y = toY(x[1]);
+      if (data.ytr[i] === 0) { dots.moveTo(X + r, Y); dots.arc(X, Y, r, 0, 2 * Math.PI); }
+      else { rings.moveTo(X + r, Y); rings.arc(X, Y, r, 0, 2 * Math.PI); }
+    });
+    ctx.fill(dots);
+    ctx.stroke(rings);
+  }
+  patternAt(grid, clientX, clientY) {
+    const b = this.canvas.getBoundingClientRect();
+    const u = (clientX - b.left) / b.width, v = 1 - (clientY - b.top) / b.height;
+    if (u < 0 || u > 1 || v < 0 || v > 1) return null;
+    const G = grid.G, i = Math.min(G - 1, Math.round(u * (G - 1))), j = Math.min(G - 1, Math.round(v * (G - 1)));
+    return grid.pattern[j * G + i];
+  }
+}
+
+// ---------------------------------------------------------------- state and the run
+const state = { data: 'moons', loss: 'cross_entropy', depth: 2, width: 5, seed: 1, compare: false, playing: true };
+const depthsFor = (width) => (width === 16 ? [1, 2, 3] : [1, 2, 3, 4]);   // sixteen: one to three layers
+// a setting can come in the address, e.g. ?data=spiral&depth=3 or ?loss=all (used for the stills)
+if (DATASETS.includes(params.get('data'))) state.data = params.get('data');
+if (+params.get('width') === 16) state.width = 16;
+if (depthsFor(state.width).includes(+params.get('depth'))) state.depth = +params.get('depth');
+if (params.get('loss') === 'all') state.compare = true;
+else if (LOSSES[params.get('loss')]) state.loss = params.get('loss');
+if (+params.get('seed') > 0) state.seed = +params.get('seed');
+let run = null;
+
+function newRun() {
+  const data = makeDataset(state.data);
+  const losses = state.compare ? Object.keys(LOSSES) : [state.loss];
+  const models = losses.map((l) => {
+    const model = makeModel(l, state.depth, state.seed, state.width);
+    return { model, S: makeScratch(model), grid: null, stats: null, acc: 0, hist: [], trace: [], view: null };
+  });
+  const host = document.getElementById('planes');
+  host.innerHTML = '';
+  models.forEach((m) => { m.plane = new Plane(host, state.compare ? LOSSES[m.model.loss] : null); });
+  run = { data, models, elapsed: 0, done: false };
+  layout();
+  if (STILL) {
+    // the whole run at once, keeping a point of the trace at every doubling of the epoch
+    for (let e = 2; ; e = Math.min(EPOCHS, Math.ceil(e * 1.15))) {
+      advance(e);
+      for (const m of run.models) {
+        measure(m, liveGrid(m));
+        m.trace.push({ epoch: m.model.epoch, acc: m.acc, regions: m.stats.regions });
+        keep(m);
+      }
+      if (e === EPOCHS) break;
+    }
+    finish();
+  }
+}
+
+// pacing: epoch = 4000^(t / DURATION), so the fast early changes get time on screen
+const epochAt = (t) => Math.min(EPOCHS, Math.floor(EPOCHS ** Math.min(1, t / DURATION)));
+function advance(target) {
+  for (const m of run.models) {
+    while (m.model.epoch < target) {
+      trainEpoch(m.model, run.data.Xtr, run.data.ytr, m.S);
+    }
+  }
+  if (target >= EPOCHS) run.done = true;
+}
+
+const liveGrid = (m) => (state.compare ? GRID_COMPARE : m.model.K > 20 ? 200 : GRID_LIVE);
+function measure(m, G) {
+  m.grid = evalGrid(m.model, G, m.S);
+  m.stats = regionStats(m.grid, m.model.K);
+  m.acc = accuracy(m.model, run.data.Xte, run.data.yte, m.S);
+}
+
+function finish() {
+  // the final numbers: at 1600², and at the thesis's 800² to compare
+  for (const m of run.models) {
+    m.thesis = regionStats(evalGrid(m.model, GRID_THESIS, m.S, false), m.model.K);
+    // 800² only for three networks side by side and for wide ones, so a phone doesn't stall at the end
+    m.final = state.compare || m.model.K > 20 ? m.thesis : regionStats(evalGrid(m.model, GRID_FINAL, m.S, false), m.model.K);
+    measure(m, state.compare ? GRID_COMPARE : 400);
+  }
+  render();
+}
+
+let last = 0;
+function frame(now) {
+  requestAnimationFrame(frame);
+  if (!run || run.done || !state.playing) { last = 0; return; }
+  run.elapsed += Math.min(0.25, (now - (last || now)) / 1000);
+  last = now;
+  advance(epochAt(run.elapsed));
+  for (const m of run.models) {
+    measure(m, liveGrid(m));
+    m.trace.push({ epoch: m.model.epoch, acc: m.acc, regions: m.stats.regions });
+    keep(m);
+  }
+  if (run.done) finish(); else render();
+}
+
+// ---------------------------------------------------------------- the variables (the controls)
+// the variables, in the panel's order: label, options, the chosen one, and the colour that marks it
+const VARS = {
+  data: { label: 'data', values: () => DATASETS, option: (v) => v, colour: '#7fd8cc' },
+  loss: { label: 'loss', values: () => [...Object.keys(LOSSES), 'all'], option: (v) => ({ cross_entropy: 'cross-entropy', mse: 'MSE', harmonic: 'harmonic', all: 'all three' })[v], colour: '#ff9a87' },
+  width: { label: 'neurons a layer', values: () => [5, 16], option: (v) => String(v), colour: '#f0d890' },
+  depth: { label: 'hidden layers', values: () => depthsFor(state.width), option: (v) => String(v), colour: '#a8a8e6' },
+};
+const current = (key) => (key === 'loss' && state.compare ? 'all' : state[key]);
+function renderVars() {
+  document.getElementById('vars').innerHTML = Object.entries(VARS).map(([key, v]) =>
+    `<dt id="var-${key}">${v.label}</dt><dd role="group" aria-labelledby="var-${key}" style="--u:${v.colour}">` +
+    v.values().map((o) => `<button class="opt" data-k="${key}" data-v="${o}" aria-pressed="${o === current(key)}">${v.option(o)}</button>`).join('') +
+    '</dd>').join('');
+}
+function choose(key, raw) {
+  const v = key === 'depth' || key === 'width' ? +raw : raw;
+  if (key === 'loss') { state.compare = v === 'all'; if (v !== 'all') state.loss = v; }
+  else state[key] = v;
+  if (!depthsFor(state.width).includes(state.depth)) state.depth = Math.max(...depthsFor(state.width));
+  renderSentence();
+  newRun();
+}
+document.getElementById('vars').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-v]');
+  if (b) choose(b.dataset.k, b.dataset.v);
+});
+// the panel shows what is running; nothing else repeats it
+const renderSentence = () => renderVars();
+
+// ---------------------------------------------------------------- what the side shows
+function render() {
+  for (const m of run.models) m.plane.draw(m.grid, m.model.K, run.data);
+  const m0 = run.models[0];
+  const pieces = (m) => (m.final && !m.view ? m.final : m.stats).regions;
+  const count = document.getElementById('count');
+  if (state.compare) {
+    count.innerHTML = `<span class="n" style="font-size:clamp(44px,6vw,84px);white-space:nowrap">${run.models.map(pieces).join('<span style="opacity:.25"> · </span>')}</span>` +
+      `<span class="small">pieces<span>${run.models.map((m) => Math.round(m.acc * 100)).join(' · ')} % right</span></span>`;
+  } else {
+    count.innerHTML = `<span class="n">${pieces(m0)}</span><span class="small">pieces<span>${Math.round(m0.acc * 100)} % right</span></span>`;
+  }
+  for (const m of run.models) m.plane.epoch.textContent = state.compare ? '' : m.view ? `epoch ${m.view} of ${EPOCHS}` : `epoch ${m.model.epoch}`;
+  drawTrace();
+  document.getElementById('finding').textContent = finding();
+  const play = document.getElementById('play');
+  play.textContent = run.done ? '' : state.playing ? 'pause' : 'go on';
+  document.getElementById('look').textContent = run.done ? 'drag the handle along the line to go back to any epoch' : '';
+  document.getElementById('result-label').textContent = m0.view ? `at epoch ${m0.view}` : run.done ? `result after ${EPOCHS} epochs` : 'so far';
+}
+
+// one thin line for right answers, one for the number of pieces (epochs on a log scale); once the
+// run is done, a handle on it scrubs back through the epochs
+const TW = 400, TH = 46;
+const lx = (e) => (Math.log(Math.max(1, e)) / Math.log(EPOCHS)) * TW;
+function drawTrace() {
+  const svg = document.getElementById('trace');
+  const m = run.models[0], tr = m.trace;
+  let out = `<line x1="0" x2="${TW}" y1="${TH}" y2="${TH}" stroke="rgba(20,20,20,0.15)" vector-effect="non-scaling-stroke"/>`;
+  if (tr.length > 1) {
+    const maxR = Math.max(...tr.map((t) => t.regions), 1);
+    const path = (f) => tr.map((t, i) => `${i ? 'L' : 'M'}${lx(t.epoch).toFixed(1)},${f(t).toFixed(1)}`).join('');
+    out += `<path d="${path((t) => TH - (t.regions / maxR) * (TH - 4))}" fill="none" stroke="#9a87f0" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
+    out += `<path d="${path((t) => TH - Math.max(0, (t.acc - 0.4) / 0.6) * (TH - 4))}" fill="none" stroke="#141414" stroke-width="1" vector-effect="non-scaling-stroke"/>`;
+  }
+  out += CHECKPOINTS.map((c) => `<line x1="${lx(c)}" x2="${lx(c)}" y1="${TH}" y2="${TH + 4}" stroke="rgba(20,20,20,0.3)" vector-effect="non-scaling-stroke"/>`).join('');
+  if (run.done) {
+    const x = lx(m.view ?? EPOCHS);
+    out += `<line x1="${x}" x2="${x}" y1="-4" y2="${TH + 6}" stroke="#141414" stroke-width="1.5" vector-effect="non-scaling-stroke"/>`;
+  }
+  svg.innerHTML = out;
+  svg.classList.toggle('scrub', run.done);
+  svg.setAttribute('aria-valuenow', String(m.view ?? EPOCHS));
+  // the handle's knob sits outside the stretched svg, so it stays round
+  const knob = document.getElementById('knob');
+  knob.hidden = !run.done;
+  knob.style.left = `${(lx(m.view ?? EPOCHS) / TW) * 100}%`;
+}
+
+// show the network as it was at one epoch of the history (the nearest one kept); fast while dragging
+function showEpoch(epoch, fast) {
+  for (const m of run.models) {
+    if (!m.live) m.live = snapshot(m.model);
+    if (epoch >= EPOCHS) { m.model.tensors.forEach((t, i) => t.p.set(m.live[i])); m.view = null; }
+    else {
+      const h = m.hist.find((x) => x.epoch === epoch) ?? m.hist[0];
+      m.model.tensors.forEach((t, i) => t.p.set(h.snap[i]));
+      m.view = h.epoch;
+    }
+    measure(m, fast ? liveGrid(m) : state.compare ? GRID_COMPARE : 400);
+  }
+  render();
+}
+// the kept epoch nearest to a point on the line (log scale)
+function epochAtX(clientX) {
+  const r = document.getElementById('trace').getBoundingClientRect();
+  const u = Math.min(1, Math.max(0, (clientX - r.left) / r.width)), target = EPOCHS ** u;
+  const h = run.models[0].hist;
+  let best = h[0];
+  for (const x of h) if (Math.abs(Math.log(x.epoch / target)) < Math.abs(Math.log(best.epoch / target))) best = x;
+  return best.epoch;
+}
+let dragging = false, pendingX = null;
+const trace = document.getElementById('trace');
+trace.addEventListener('pointerdown', (e) => {
+  if (!run?.done) return;
+  dragging = true;
+  trace.setPointerCapture(e.pointerId);
+  pendingX = e.clientX;
+  requestAnimationFrame(scrubFrame);
+});
+trace.addEventListener('pointermove', (e) => {
+  if (!dragging) return;
+  if (pendingX === null) requestAnimationFrame(scrubFrame);
+  pendingX = e.clientX;
+});
+const endDrag = () => {
+  if (!dragging) return;
+  dragging = false;
+  // a quick tap may end before its frame ran: take its position now, then the sharper grid
+  const e = pendingX !== null ? epochAtX(pendingX) : run.models[0].view ?? EPOCHS;
+  pendingX = null;
+  showEpoch(e, false);
+};
+trace.addEventListener('pointerup', endDrag);
+trace.addEventListener('pointercancel', endDrag);
+function scrubFrame() {
+  if (pendingX === null) return;
+  const e = epochAtX(pendingX);
+  pendingX = null;
+  if (e !== (run.models[0].view ?? EPOCHS)) showEpoch(e, true);
+}
+// keys on the line: arrows step through the kept epochs, Home and End jump
+trace.addEventListener('keydown', (e) => {
+  if (!run?.done) return;
+  const h = run.models[0].hist, now = run.models[0].view ?? EPOCHS;
+  let i = h.findIndex((x) => x.epoch === now);
+  if (e.key === 'ArrowLeft') i = Math.max(0, i - 1);
+  else if (e.key === 'ArrowRight') i = Math.min(h.length - 1, i + 1);
+  else if (e.key === 'Home') i = 0;
+  else if (e.key === 'End') i = h.length - 1;
+  else return;
+  e.preventDefault();
+  e.stopPropagation();
+  showEpoch(h[i].epoch, false);
+});
+
+// one sentence: what this run shows, said only when it's true for this run
+function finding() {
+  const m = run.models[0];
+  if (m.view) return `This is the network at epoch ${m.view}. Drag the handle to the end of the line for the result.`;
+  if (!run.done) {
+    if (m.model.epoch < 60) return 'Every neuron folds the plane along a line. The flat pieces between the folds are the network’s activation regions; the thick line is where its answer changes.';
+    if (state.compare) return 'The same network and the same start, three ways of telling it how wrong it is.';
+    return 'Watch the folds move while it learns.';
+  }
+  if (state.compare) {
+    return `One run varies a lot – across 60 runs per setting, the loss changes the folds far less than depth or data do.`;
+  }
+  const final = m.final, tr = m.trace, accEnd = m.acc;
+  const settled = (key, tol) => {
+    if (tr.length < 12) return 0;                            // no real history (jumped to the end)
+    const end = tr[tr.length - 1][key];
+    let e = EPOCHS;
+    for (let i = tr.length - 1; i >= 0 && Math.abs(tr[i][key] - end) <= tol(end); i--) e = tr[i].epoch;
+    return e;
+  };
+  const accAt = settled('acc', () => 0.01), regAt = settled('regions', (v) => Math.max(1, v * 0.06));
+  if (state.width === 16) {
+    const pct = Math.round(accEnd * 100), layers = ['one layer', 'two layers', 'three layers'][state.depth - 1];
+    // spiral, 20 runs each (docs/thesis-piece/experiments/spiral-16): one layer of 16 stays at 61–64 %;
+    // two or three pass 90 % in 18–20 of 20 runs with cross-entropy, 8–12 of 20 with harmonic loss
+    if (state.data === 'spiral' && accEnd >= 0.9) return `Sixteen neurons a layer solve the spiral: ${pct} % right with ${layers} – layers of five rarely reach 90 %. Wider beats deeper.`;
+    if (state.data === 'spiral' && state.depth === 1) return `${pct} % right. One layer of sixteen still can't follow the spiral – it needs a second layer: wide and two deep.`;
+    if (state.data === 'spiral') return `${pct} % right this time. With ${layers} of sixteen, cross-entropy gets past 90 % almost every run, harmonic loss in about half.`;
+    return `Sixteen neurons a layer cut the plane into ${final.regions} pieces with ${layers} – wider layers add pieces fast.`;
+  }
+  if (state.depth === 4) {
+    const extra = final.regions - m.thesis.regions;
+    const grid = extra > 0 ? ` A grid twice as fine as the thesis's finds ${extra} tiny ${extra === 1 ? 'piece' : 'pieces'} more.` : '';
+    if (state.data === 'spiral' && accEnd > 0.85) return `Four layers – one more than the thesis – and the spiral gives way: ${Math.round(accEnd * 100)} % right, in ${final.regions} pieces.${grid}`;
+    return `Four layers go one step beyond the thesis: ${final.regions} pieces, and the trend goes on – more, smaller, more unequal.${grid}`;
+  }
+  if (state.data === 'spiral') return `The spiral is hard. ${final.boundary} of the ${final.regions} pieces crowd around the thick line – harder data spends its folds where the decision is made.`;
+  const round = (e) => (e < 100 ? e : Math.round(e / 50) * 50);
+  if (regAt > accAt * 1.6 && accEnd > 0.9) return `It had the answer by epoch ${round(accAt)}, but the folds kept moving ${regAt >= 3600 ? 'to the very end' : 'until about epoch ' + round(regAt)}.`;
+  if (state.depth === 3) return `Three layers fold the plane into many more pieces, smaller and more unequal than one layer does.`;
+  if (state.depth === 1) return `One layer cuts the plane with straight lines only. Add a layer and the lines start to bend.`;
+  return `${final.boundary} of the pieces lie on the thick line. Try three layers, or the spiral.`;
+}
+
+// ---------------------------------------------------------------- pointing, keys, layout
+// point at a piece: it stays bright, the rest fades, and its neurons show as dots beside it
+function onPoint(clientX, clientY) {
+  if (!run || state.compare) return;
+  const m = run.models[0];
+  if (!m.grid) return;
+  const p = m.plane.patternAt(m.grid, clientX, clientY), tip = m.plane.tip;
+  if (p === null) tip.style.display = 'none';
+  else {
+    // which neurons are on, straight from the network at the pointer (exact for any width)
+    const b = m.plane.canvas.getBoundingClientRect();
+    const x0 = -BOX + (2 * BOX * (clientX - b.left)) / b.width, x1 = BOX - (2 * BOX * (clientY - b.top)) / b.height;
+    forward(m.model, x0, x1, m.S);
+    let html = '';
+    for (let l = 0; l < m.model.depth; l++) {
+      html += '<span class="layer">';
+      for (let u = 0; u < m.model.width; u++) html += `<i class="${m.S.z[l][u] > 0 ? 'on' : ''}"></i>`;
+      html += '</span>';
+    }
+    tip.innerHTML = html;
+    tip.classList.toggle('rows', m.model.width > 5);
+    tip.style.display = 'flex';
+    tip.style.left = Math.max(0, Math.min(clientX - b.left, b.width - tip.offsetWidth - 16)) + 'px';
+    tip.style.top = clientY - b.top + 'px';
+  }
+  if (p === m.plane.hover) return;
+  m.plane.hover = p;
+  m.plane.draw(m.grid, m.model.K, run.data);
+}
+window.addEventListener('pointermove', (e) => onPoint(e.clientX, e.clientY));
+window.addEventListener('pointerdown', (e) => onPoint(e.clientX, e.clientY));
+// embedded: the project page passes on the pointer from anywhere on the page
+window.addEventListener('message', (e) => {
+  if (e.origin !== location.origin || !e.data?.livePointer) return;
+  onPoint(e.data.livePointer.x, e.data.livePointer.y);
+});
+document.getElementById('play').addEventListener('click', () => { state.playing = !state.playing; render(); });
+document.getElementById('again').addEventListener('click', () => { state.seed++; newRun(); });
+// space pauses; embedded, the page around it handles the arrow keys and Esc
+window.addEventListener('keydown', (e) => {
+  if (e.key === ' ' && run && !run.done && !e.target.closest?.('button')) { e.preventDefault(); state.playing = !state.playing; render(); return; }
+  if (e.target === trace) return;                           // the line handles its own arrow keys
+  if (EMBEDDED && ['ArrowLeft', 'ArrowRight', 'Escape'].includes(e.key)) window.parent.postMessage({ specimenKey: e.key }, location.origin);
+});
+
+function layout() {
+  if (!run) return;
+  const stage = document.querySelector('.stage'), cs = getComputedStyle(stage);
+  const padX = parseFloat(cs.paddingLeft), padY = parseFloat(cs.paddingTop);
+  const W = innerWidth - 2 * padX, H = innerHeight - 2 * padY - 20;
+  const column = cs.gridTemplateColumns.split(' ').length === 1, n = run.models.length, gap = 14;
+  document.body.classList.toggle('compare', state.compare);
+  const threeCol = !state.compare && matchMedia('(min-width: 1100px)').matches;
+  const sideMin = (threeCol ? 640 : 320) + parseFloat(cs.columnGap || 0);   // room for the columns beside the plane
+  // embedded, the frame grows with the piece; the page says how much of the screen is left below
+  // the frame's top (fit), and the plane takes that, so plane, variables and result are on screen
+  const fitHeight = !EMBEDDED || STILL;
+  const cap = fitHeight ? H : fit ? Math.max(300, fit - 2 * padY - 30) : 500;
+  const size = STILL ? Math.min(innerWidth, innerHeight) : column ? (fitHeight ? Math.min(W, H * 0.62) : W) : Math.min(W * 0.58, W - sideMin, cap);
+  const each = n > 1 ? Math.floor((column ? W : size) / n - gap * (n - 1) / n) : Math.floor(size);
+  for (const m of run.models) m.plane.resize(each);
+  if (run.models[0].grid) render();
+}
+// embedded: the page tells how much height is left on screen below the frame's top
+let fit = null;
+window.addEventListener('message', (e) => {
+  if (e.origin !== location.origin || typeof e.data?.liveFit !== 'number') return;
+  if (e.data.liveFit !== fit) { fit = e.data.liveFit; layout(); }
+});
+// embedded: tell the page how tall the piece is, so it can size its frame
+if (EMBEDDED && window.parent !== window) {
+  const report = () => window.parent.postMessage({ liveHeight: Math.ceil(document.querySelector('.stage').getBoundingClientRect().height) }, location.origin);
+  new ResizeObserver(report).observe(document.querySelector('.stage'));
+}
+addEventListener('resize', layout);
+
+renderSentence();
+newRun();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
