@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Nudibranch – living specimen · Mikato</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #f2efe9; overflow: hidden; }
+    canvas { display: block; touch-action: none; }
+    html { touch-action: pan-y; }     /* no double-tap zoom when tapping through the species */
+    /* the field guide entry under the specimen (written by sketch.js) */
+    .entry { position: fixed; left: 0; right: 0; bottom: 0; padding: 0 20px 18px; color: #141414; pointer-events: none; }
+    .entry p { margin: 0; max-width: 46em; }
+    .entry-meta { font: 11px/1.6 Menlo, monospace; opacity: .75; }
+    .entry-meta i { font-family: Georgia, serif; font-size: 13px; }
+    .entry-line { font: italic 15px/1.4 Georgia, "Times New Roman", serif; margin: 4px 0 6px !important; }
+    .entry-hint { opacity: .6; }
+    @media (min-width: 640px) { .entry { padding: 0 28px 24px; } .entry-line { font-size: 17px; } }
+  </style>
+  <!-- p5.js 1.11.8 (LGPL 2.1, see p5-LICENSE.txt) -->
+  <script src="p5.min.js"></script>
+</head>
+<!-- copied from the nudibranch repo (living-specimen/, the drawings from field-guide-drawings/) -->
+<body data-drawings="drawings/">
+<script src="specimens.js?v=2"></script>
+<script src="sketch.js?v=8"></script>
+</body>
+</html>
